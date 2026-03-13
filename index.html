@@ -68,6 +68,9 @@ h1{
   font-weight:700;
 }
 .card:hover{background:#fafafa}
+.card.empty-chapter{
+  opacity:.45;
+}
 .word-card{
   background:#fff;
   border:1px solid #e3e3e3;
@@ -319,6 +322,17 @@ function shuffle(arr){
   return copy;
 }
 
+function normalizeChapterValue(value){
+  const cleaned = String(value || "").trim();
+
+  if(!cleaned) return "";
+
+  const onlyNumber = cleaned.replace(/[^\d]/g, "");
+  if(!onlyNumber) return "";
+
+  return String(Number(onlyNumber));
+}
+
 function speakWord(word){
   if (!("speechSynthesis" in window)) {
     alert("이 기기에서는 음성 재생을 지원하지 않습니다.");
@@ -466,18 +480,24 @@ function renderChapters(){
     x["구간"] === state.section
   );
 
-  const chapters = getUnique(rows, "Chapter").sort((a, b) => Number(a) - Number(b));
-
-  if(!chapters.length){
+  if(!rows.length){
     app.innerHTML = `<div class="empty">해당 구간의 Chapter 데이터가 없습니다.</div>`;
     return;
   }
 
+  const chapters = Array.from({ length: 12 }, (_, i) => String(i + 1));
+
   app.innerHTML = `
     <div class="grid">
-      ${chapters.map(ch => `
-        <div class="card" data-type="chapter" data-value="${escapeHtml(ch)}">Chapter ${escapeHtml(ch)}</div>
-      `).join("")}
+      ${chapters.map(ch => {
+        const hasData = rows.some(row => normalizeChapterValue(row["Chapter"]) === ch);
+
+        return `
+          <div class="card ${hasData ? "" : "empty-chapter"}" data-type="chapter" data-value="${escapeHtml(ch)}">
+            Chapter ${escapeHtml(ch)}
+          </div>
+        `;
+      }).join("")}
     </div>
   `;
 }
@@ -487,7 +507,7 @@ function getCurrentChapterRows(){
     x["교재"] === state.book &&
     x["레벨"] === state.level &&
     x["구간"] === state.section &&
-    x["Chapter"] === state.chapter
+    normalizeChapterValue(x["Chapter"]) === normalizeChapterValue(state.chapter)
   );
 }
 
@@ -698,7 +718,7 @@ function loadDataToState(type, value){
     state.hideMeaning = false;
     state.mode = "browse";
   } else if(type === "chapter"){
-    state.chapter = value;
+    state.chapter = normalizeChapterValue(value);
     state.hideWord = false;
     state.hideMeaning = false;
     state.mode = "browse";
@@ -823,7 +843,13 @@ async function loadData(){
       .map(r => {
         const obj = {};
         headers.forEach((h, i) => {
-          obj[h] = String(r[i] || "").trim();
+          let value = String(r[i] || "").trim();
+
+          if(h === "Chapter"){
+            value = normalizeChapterValue(value);
+          }
+
+          obj[h] = value;
         });
         return obj;
       });
