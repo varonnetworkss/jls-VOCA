@@ -234,10 +234,7 @@ function speakWord(word){
       voices.find(v => v.lang.startsWith("en")) ||
       voices[0];
 
-    if (voice) {
-      u.voice = voice;
-    }
-
+    if (voice) u.voice = voice;
     synth.speak(u);
   };
 
@@ -257,21 +254,21 @@ function renderControls(){
   let html = "";
 
   if(state.book){
-    html += `<button class="btn" onclick="goHome()">처음으로</button>`;
+    html += `<button class="btn" data-action="home">처음으로</button>`;
   }
   if(state.book && !state.level){
-    html += `<button class="btn" onclick="backToBooks()">← 교재</button>`;
+    html += `<button class="btn" data-action="back-books">← 교재</button>`;
   }
   if(state.level && !state.section){
-    html += `<button class="btn" onclick="backToLevels()">← 레벨</button>`;
+    html += `<button class="btn" data-action="back-levels">← 레벨</button>`;
   }
   if(state.section && !state.chapter){
-    html += `<button class="btn" onclick="backToSections()">← 구간</button>`;
+    html += `<button class="btn" data-action="back-sections">← 구간</button>`;
   }
   if(state.chapter){
-    html += `<button class="btn" onclick="backToChapters()">← Chapter</button>`;
-    html += `<button class="btn" onclick="toggleMeaning()">${state.hideMeaning ? "뜻 보이기" : "뜻 숨기기"}</button>`;
-    html += `<button class="btn" onclick="toggleWord()">${state.hideWord ? "영어 보이기" : "영어 숨기기"}</button>`;
+    html += `<button class="btn" data-action="back-chapters">← Chapter</button>`;
+    html += `<button class="btn" data-action="toggle-meaning">${state.hideMeaning ? "뜻 보이기" : "뜻 숨기기"}</button>`;
+    html += `<button class="btn" data-action="toggle-word">${state.hideWord ? "영어 보이기" : "영어 숨기기"}</button>`;
   }
 
   controls.innerHTML = html;
@@ -297,7 +294,7 @@ function renderBooks(){
   app.innerHTML = `
     <div class="grid">
       ${books.map(book => `
-        <div class="card" onclick='selectBook(${JSON.stringify(book)})'>${escapeHtml(book)}</div>
+        <div class="card" data-type="book" data-value="${escapeHtml(book)}">${escapeHtml(book)}</div>
       `).join("")}
     </div>
   `;
@@ -315,7 +312,7 @@ function renderLevels(){
   app.innerHTML = `
     <div class="grid">
       ${levels.map(level => `
-        <div class="card" onclick='selectLevel(${JSON.stringify(level)})'>${escapeHtml(level)}</div>
+        <div class="card" data-type="level" data-value="${escapeHtml(level)}">${escapeHtml(level)}</div>
       `).join("")}
     </div>
   `;
@@ -336,7 +333,7 @@ function renderSections(){
   app.innerHTML = `
     <div class="grid">
       ${sections.map(section => `
-        <div class="card" onclick='selectSection(${JSON.stringify(section)})'>${escapeHtml(section)}</div>
+        <div class="card" data-type="section" data-value="${escapeHtml(section)}">${escapeHtml(section)}</div>
       `).join("")}
     </div>
   `;
@@ -359,7 +356,7 @@ function renderChapters(){
   app.innerHTML = `
     <div class="grid">
       ${chapters.map(ch => `
-        <div class="card" onclick='selectChapter(${JSON.stringify(ch)})'>Chapter ${escapeHtml(ch)}</div>
+        <div class="card" data-type="chapter" data-value="${escapeHtml(ch)}">Chapter ${escapeHtml(ch)}</div>
       `).join("")}
     </div>
   `;
@@ -386,7 +383,7 @@ function renderWords(){
             <div class="word ${state.hideWord ? "hidden-word" : ""}">${i + 1}. ${escapeHtml(row["영어"])}</div>
             <div class="meaning ${state.hideMeaning ? "hidden-meaning" : ""}">${escapeHtml(row["뜻"])}</div>
           </div>
-          <button class="speak-btn" onclick='speakWord(${JSON.stringify(row["영어"])})'>🔊</button>
+          <button class="speak-btn" data-type="speak" data-value="${escapeHtml(row["영어"])}">🔊</button>
         </div>
       `).join("")}
     </div>
@@ -397,57 +394,11 @@ function render(){
   renderControls();
   renderPath();
 
-  if(!state.book){
-    renderBooks();
-    return;
-  }
-  if(!state.level){
-    renderLevels();
-    return;
-  }
-  if(!state.section){
-    renderSections();
-    return;
-  }
-  if(!state.chapter){
-    renderChapters();
-    return;
-  }
-  renderWords();
-}
-
-function selectBook(book){
-  state.book = book;
-  state.level = null;
-  state.section = null;
-  state.chapter = null;
-  state.hideWord = false;
-  state.hideMeaning = false;
-  render();
-}
-
-function selectLevel(level){
-  state.level = level;
-  state.section = null;
-  state.chapter = null;
-  state.hideWord = false;
-  state.hideMeaning = false;
-  render();
-}
-
-function selectSection(section){
-  state.section = section;
-  state.chapter = null;
-  state.hideWord = false;
-  state.hideMeaning = false;
-  render();
-}
-
-function selectChapter(chapter){
-  state.chapter = chapter;
-  state.hideWord = false;
-  state.hideMeaning = false;
-  render();
+  if(!state.book) return renderBooks();
+  if(!state.level) return renderLevels();
+  if(!state.section) return renderSections();
+  if(!state.chapter) return renderChapters();
+  return renderWords();
 }
 
 function goHome(){
@@ -462,57 +413,101 @@ function goHome(){
   render();
 }
 
-function backToBooks(){
-  state.book = null;
-  state.level = null;
-  state.section = null;
-  state.chapter = null;
-  state.hideWord = false;
-  state.hideMeaning = false;
+function loadDataToState(type, value){
+  if(type === "book"){
+    state.book = value;
+    state.level = null;
+    state.section = null;
+    state.chapter = null;
+    state.hideWord = false;
+    state.hideMeaning = false;
+  } else if(type === "level"){
+    state.level = value;
+    state.section = null;
+    state.chapter = null;
+    state.hideWord = false;
+    state.hideMeaning = false;
+  } else if(type === "section"){
+    state.section = value;
+    state.chapter = null;
+    state.hideWord = false;
+    state.hideMeaning = false;
+  } else if(type === "chapter"){
+    state.chapter = value;
+    state.hideWord = false;
+    state.hideMeaning = false;
+  }
   render();
 }
 
-function backToLevels(){
-  state.level = null;
-  state.section = null;
-  state.chapter = null;
-  state.hideWord = false;
-  state.hideMeaning = false;
-  render();
-}
+controls.addEventListener("click", function(e){
+  const btn = e.target.closest("[data-action]");
+  if(!btn) return;
 
-function backToSections(){
-  state.section = null;
-  state.chapter = null;
-  state.hideWord = false;
-  state.hideMeaning = false;
-  render();
-}
+  const action = btn.dataset.action;
 
-function backToChapters(){
-  state.chapter = null;
-  state.hideWord = false;
-  state.hideMeaning = false;
-  render();
-}
+  if(action === "home") goHome();
+  if(action === "back-books"){
+    state.book = null;
+    state.level = null;
+    state.section = null;
+    state.chapter = null;
+    state.hideWord = false;
+    state.hideMeaning = false;
+    render();
+  }
+  if(action === "back-levels"){
+    state.level = null;
+    state.section = null;
+    state.chapter = null;
+    state.hideWord = false;
+    state.hideMeaning = false;
+    render();
+  }
+  if(action === "back-sections"){
+    state.section = null;
+    state.chapter = null;
+    state.hideWord = false;
+    state.hideMeaning = false;
+    render();
+  }
+  if(action === "back-chapters"){
+    state.chapter = null;
+    state.hideWord = false;
+    state.hideMeaning = false;
+    render();
+  }
+  if(action === "toggle-meaning"){
+    state.hideMeaning = !state.hideMeaning;
+    renderControls();
+    renderWords();
+  }
+  if(action === "toggle-word"){
+    state.hideWord = !state.hideWord;
+    renderControls();
+    renderWords();
+  }
+});
 
-function toggleMeaning(){
-  state.hideMeaning = !state.hideMeaning;
-  renderControls();
-  renderWords();
-}
+app.addEventListener("click", function(e){
+  const target = e.target.closest("[data-type]");
+  if(!target) return;
 
-function toggleWord(){
-  state.hideWord = !state.hideWord;
-  renderControls();
-  renderWords();
-}
+  const type = target.dataset.type;
+  const value = target.dataset.value;
+
+  if(type === "speak"){
+    speakWord(value);
+    return;
+  }
+
+  loadDataToState(type, value);
+});
 
 async function loadData(){
   try{
     const res = await fetch("./vocab.csv?ts=" + Date.now());
     const text = await res.text();
-
     const rows = parseCSV(text);
 
     if(rows.length < 2){
