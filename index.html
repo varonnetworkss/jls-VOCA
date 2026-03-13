@@ -119,12 +119,101 @@ h1{
   text-align:center;
   color:#666;
 }
+
+/* 테스트 */
+.test-wrap{
+  background:#fff;
+  border:1px solid #e3e3e3;
+  border-radius:18px;
+  padding:20px;
+}
+.test-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  margin-bottom:16px;
+  flex-wrap:wrap;
+}
+.test-progress{
+  font-size:14px;
+  color:#666;
+}
+.question-box{
+  background:#f8f9fc;
+  border:1px solid #e7e7e7;
+  border-radius:16px;
+  padding:24px;
+  margin-bottom:16px;
+  text-align:center;
+}
+.question-label{
+  font-size:14px;
+  color:#666;
+  margin-bottom:8px;
+}
+.question-word{
+  font-size:30px;
+  font-weight:700;
+  word-break:break-word;
+}
+.choice-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+.choice-btn{
+  border:1px solid #ddd;
+  background:#fff;
+  border-radius:14px;
+  padding:16px;
+  cursor:pointer;
+  font-size:16px;
+  text-align:left;
+  min-height:70px;
+}
+.choice-btn:hover{
+  background:#fafafa;
+}
+.choice-btn.correct{
+  border-color:#1f9d55;
+  background:#eefaf2;
+}
+.choice-btn.wrong{
+  border-color:#d64545;
+  background:#fff1f1;
+}
+.test-result{
+  background:#fff;
+  border:1px solid #e3e3e3;
+  border-radius:18px;
+  padding:24px;
+  text-align:center;
+}
+.result-score{
+  font-size:32px;
+  font-weight:700;
+  margin-bottom:10px;
+}
+.result-sub{
+  color:#666;
+  margin-bottom:18px;
+}
+.result-buttons{
+  display:flex;
+  gap:10px;
+  justify-content:center;
+  flex-wrap:wrap;
+}
+
 @media (max-width:900px){
   .grid{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
 @media (max-width:700px){
   .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .word-grid{grid-template-columns:1fr}
+  .choice-grid{grid-template-columns:1fr}
+  .question-word{font-size:24px}
 }
 </style>
 </head>
@@ -147,7 +236,16 @@ let state = {
   section: null,
   chapter: null,
   hideWord: false,
-  hideMeaning: false
+  hideMeaning: false,
+  mode: "browse" // browse | test | result
+};
+
+let testState = {
+  questions: [],
+  currentIndex: 0,
+  score: 0,
+  selected: null,
+  answered: false
 };
 
 const app = document.getElementById("app");
@@ -212,6 +310,15 @@ function getUnique(arr, key){
   return [...new Set(arr.map(x => String(x[key] || "").trim()).filter(Boolean))];
 }
 
+function shuffle(arr){
+  const copy = [...arr];
+  for(let i = copy.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
 function speakWord(word){
   if (!("speechSynthesis" in window)) {
     alert("이 기기에서는 음성 재생을 지원하지 않습니다.");
@@ -265,10 +372,21 @@ function renderControls(){
   if(state.section && !state.chapter){
     html += `<button class="btn" data-action="back-sections">← 구간</button>`;
   }
-  if(state.chapter){
+
+  if(state.chapter && state.mode === "browse"){
     html += `<button class="btn" data-action="back-chapters">← Chapter</button>`;
     html += `<button class="btn" data-action="toggle-meaning">${state.hideMeaning ? "뜻 보이기" : "뜻 숨기기"}</button>`;
     html += `<button class="btn" data-action="toggle-word">${state.hideWord ? "영어 보이기" : "영어 숨기기"}</button>`;
+    html += `<button class="btn" data-action="start-test">테스트 시작</button>`;
+  }
+
+  if(state.chapter && state.mode === "test"){
+    html += `<button class="btn" data-action="exit-test">단어장으로 돌아가기</button>`;
+  }
+
+  if(state.chapter && state.mode === "result"){
+    html += `<button class="btn" data-action="restart-test">다시 테스트</button>`;
+    html += `<button class="btn" data-action="exit-test">단어장으로 돌아가기</button>`;
   }
 
   controls.innerHTML = html;
@@ -280,6 +398,8 @@ function renderPath(){
   if(state.level) parts.push(state.level);
   if(state.section) parts.push(state.section);
   if(state.chapter) parts.push(`Chapter ${state.chapter}`);
+  if(state.mode === "test") parts.push("테스트");
+  if(state.mode === "result") parts.push("결과");
   pathEl.textContent = parts.join(" > ");
 }
 
@@ -362,13 +482,17 @@ function renderChapters(){
   `;
 }
 
-function renderWords(){
-  const rows = rawData.filter(x =>
+function getCurrentChapterRows(){
+  return rawData.filter(x =>
     x["교재"] === state.book &&
     x["레벨"] === state.level &&
     x["구간"] === state.section &&
     x["Chapter"] === state.chapter
   );
+}
+
+function renderWords(){
+  const rows = getCurrentChapterRows();
 
   if(!rows.length){
     app.innerHTML = `<div class="empty">해당 Chapter의 단어 데이터가 없습니다.</div>`;
@@ -390,6 +514,140 @@ function renderWords(){
   `;
 }
 
+function buildTestQuestions(rows){
+  const usable = rows.filter(r => r["영어"] && r["뜻"]);
+  const shuffled = shuffle(usable);
+
+  return shuffled.map(row => {
+    const correct = row["뜻"];
+    const wrongPool = shuffle(
+      usable
+        .map(x => x["뜻"])
+        .filter(v => v && v !== correct)
+    ).slice(0, 3);
+
+    const choices = shuffle([correct, ...wrongPool]);
+
+    return {
+      word: row["영어"],
+      correct,
+      choices
+    };
+  });
+}
+
+function startTest(){
+  const rows = getCurrentChapterRows();
+
+  if(rows.length < 4){
+    alert("테스트를 하려면 해당 Chapter에 단어가 최소 4개 있어야 한다.");
+    return;
+  }
+
+  testState = {
+    questions: buildTestQuestions(rows),
+    currentIndex: 0,
+    score: 0,
+    selected: null,
+    answered: false
+  };
+
+  state.mode = "test";
+  render();
+}
+
+function renderTest(){
+  const q = testState.questions[testState.currentIndex];
+
+  if(!q){
+    state.mode = "result";
+    render();
+    return;
+  }
+
+  app.innerHTML = `
+    <div class="test-wrap">
+      <div class="test-top">
+        <div class="test-progress">${testState.currentIndex + 1} / ${testState.questions.length}</div>
+        <div class="test-progress">점수 ${testState.score}</div>
+      </div>
+
+      <div class="question-box">
+        <div class="question-label">다음 영어의 뜻은?</div>
+        <div class="question-word">${escapeHtml(q.word)}</div>
+      </div>
+
+      <div class="choice-grid">
+        ${q.choices.map(choice => {
+          let cls = "choice-btn";
+
+          if(testState.answered){
+            if(choice === q.correct) cls += " correct";
+            else if(choice === testState.selected && choice !== q.correct) cls += " wrong";
+          }
+
+          return `
+            <button
+              class="${cls}"
+              data-type="choice"
+              data-value="${escapeHtml(choice)}"
+              ${testState.answered ? "disabled" : ""}
+            >
+              ${escapeHtml(choice)}
+            </button>
+          `;
+        }).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function handleChoice(choice){
+  if(testState.answered) return;
+
+  const q = testState.questions[testState.currentIndex];
+  testState.selected = choice;
+  testState.answered = true;
+
+  if(choice === q.correct){
+    testState.score += 1;
+  }
+
+  renderTest();
+
+  setTimeout(() => {
+    testState.currentIndex += 1;
+    testState.selected = null;
+    testState.answered = false;
+
+    if(testState.currentIndex >= testState.questions.length){
+      state.mode = "result";
+      render();
+    }else{
+      renderTest();
+      renderControls();
+      renderPath();
+    }
+  }, 800);
+}
+
+function renderResult(){
+  const total = testState.questions.length;
+  const score = testState.score;
+  const percent = total ? Math.round((score / total) * 100) : 0;
+
+  app.innerHTML = `
+    <div class="test-result">
+      <div class="result-score">${score} / ${total}</div>
+      <div class="result-sub">정답률 ${percent}%</div>
+      <div class="result-buttons">
+        <button class="btn" data-action="restart-test">다시 테스트</button>
+        <button class="btn" data-action="exit-test">단어장으로 돌아가기</button>
+      </div>
+    </div>
+  `;
+}
+
 function render(){
   renderControls();
   renderPath();
@@ -398,7 +656,10 @@ function render(){
   if(!state.level) return renderLevels();
   if(!state.section) return renderSections();
   if(!state.chapter) return renderChapters();
-  return renderWords();
+
+  if(state.mode === "browse") return renderWords();
+  if(state.mode === "test") return renderTest();
+  if(state.mode === "result") return renderResult();
 }
 
 function goHome(){
@@ -408,7 +669,8 @@ function goHome(){
     section: null,
     chapter: null,
     hideWord: false,
-    hideMeaning: false
+    hideMeaning: false,
+    mode: "browse"
   };
   render();
 }
@@ -421,21 +683,25 @@ function loadDataToState(type, value){
     state.chapter = null;
     state.hideWord = false;
     state.hideMeaning = false;
+    state.mode = "browse";
   } else if(type === "level"){
     state.level = value;
     state.section = null;
     state.chapter = null;
     state.hideWord = false;
     state.hideMeaning = false;
+    state.mode = "browse";
   } else if(type === "section"){
     state.section = value;
     state.chapter = null;
     state.hideWord = false;
     state.hideMeaning = false;
+    state.mode = "browse";
   } else if(type === "chapter"){
     state.chapter = value;
     state.hideWord = false;
     state.hideMeaning = false;
+    state.mode = "browse";
   }
   render();
 }
@@ -447,6 +713,7 @@ controls.addEventListener("click", function(e){
   const action = btn.dataset.action;
 
   if(action === "home") goHome();
+
   if(action === "back-books"){
     state.book = null;
     state.level = null;
@@ -454,38 +721,60 @@ controls.addEventListener("click", function(e){
     state.chapter = null;
     state.hideWord = false;
     state.hideMeaning = false;
+    state.mode = "browse";
     render();
   }
+
   if(action === "back-levels"){
     state.level = null;
     state.section = null;
     state.chapter = null;
     state.hideWord = false;
     state.hideMeaning = false;
+    state.mode = "browse";
     render();
   }
+
   if(action === "back-sections"){
     state.section = null;
     state.chapter = null;
     state.hideWord = false;
     state.hideMeaning = false;
+    state.mode = "browse";
     render();
   }
+
   if(action === "back-chapters"){
     state.chapter = null;
     state.hideWord = false;
     state.hideMeaning = false;
+    state.mode = "browse";
     render();
   }
+
   if(action === "toggle-meaning"){
     state.hideMeaning = !state.hideMeaning;
     renderControls();
     renderWords();
   }
+
   if(action === "toggle-word"){
     state.hideWord = !state.hideWord;
     renderControls();
     renderWords();
+  }
+
+  if(action === "start-test"){
+    startTest();
+  }
+
+  if(action === "exit-test"){
+    state.mode = "browse";
+    render();
+  }
+
+  if(action === "restart-test"){
+    startTest();
   }
 });
 
@@ -498,6 +787,11 @@ app.addEventListener("click", function(e){
 
   if(type === "speak"){
     speakWord(value);
+    return;
+  }
+
+  if(type === "choice"){
+    handleChoice(value);
     return;
   }
 
