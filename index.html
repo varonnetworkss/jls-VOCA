@@ -1,216 +1,529 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>서수원 JLS 단어장</title>
-
-<style>
-
-body{
-margin:0;
-font-family:Arial;
-background:#f5f6fa;
-}
-
-.wrap{
-max-width:900px;
-margin:auto;
-padding:20px;
-}
-
-.top{
-background:linear-gradient(135deg,#5b7cff,#7c4dff);
-color:white;
-padding:30px;
-border-radius:25px;
-}
-
-h1{
-margin:0;
-}
-
-button{
-cursor:pointer;
-border:none;
-padding:10px 15px;
-border-radius:10px;
-}
-
-.card{
-background:white;
-padding:20px;
-border-radius:15px;
-margin-top:10px;
-box-shadow:0 5px 10px rgba(0,0,0,0.1);
-}
-
-.grid{
-display:grid;
-grid-template-columns:repeat(3,1fr);
-gap:10px;
-}
-
-.word{
-font-size:24px;
-font-weight:bold;
-}
-
-.mean{
-margin-top:5px;
-color:#555;
-}
-
-.hidden{
-display:none;
-}
-
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>서수원 JLS 단어장</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+      background: #f5f6fa;
+      color: #111;
+    }
+    .wrap {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+    .path {
+      font-size: 14px;
+      color: #666;
+    }
+    .panel {
+      background: #fff;
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+    .section-title {
+      margin: 0 0 14px 0;
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+    button {
+      border: 0;
+      background: #111;
+      color: #fff;
+      padding: 14px 16px;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button.sub {
+      background: #e9edf3;
+      color: #111;
+      font-weight: 600;
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+    .card {
+      margin-top: 16px;
+      min-height: 280px;
+      border-radius: 20px;
+      background: #fff;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .card-inner {
+      width: 100%;
+    }
+    .card-label {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 12px;
+    }
+    .card-word {
+      font-size: 38px;
+      font-weight: 800;
+      line-height: 1.35;
+      word-break: keep-all;
+    }
+    .card-meaning {
+      font-size: 30px;
+      font-weight: 700;
+      line-height: 1.45;
+      word-break: keep-all;
+    }
+    .small {
+      font-size: 14px;
+      color: #666;
+    }
+    .hidden { display: none; }
+    .status {
+      margin-top: 10px;
+      color: #666;
+      font-size: 14px;
+    }
+    .count {
+      margin-top: 14px;
+      font-size: 15px;
+      color: #444;
+      font-weight: 700;
+    }
+    .empty {
+      text-align: center;
+      padding: 50px 20px;
+      color: #666;
+    }
+    @media (max-width: 640px) {
+      h1 { font-size: 24px; }
+      .card-word { font-size: 30px; }
+      .card-meaning { font-size: 24px; }
+    }
+  </style>
 </head>
-
 <body>
+  <div class="wrap">
+    <div class="topbar">
+      <h1>서수원 JLS 단어장</h1>
+      <div class="path" id="pathText">교재 선택</div>
+    </div>
 
-<div class="wrap">
+    <div class="panel">
+      <div id="screenBooks">
+        <h2 class="section-title">교재 선택</h2>
+        <div class="grid" id="bookList"></div>
+        <div class="status" id="loadStatus">vocab.csv 불러오는 중...</div>
+      </div>
 
-<div class="top">
-<h1>서수원 JLS 단어장</h1>
-<p>교재 선택 → 레벨 → 챕터 → 단어 테스트</p>
-</div>
+      <div id="screenLevels" class="hidden">
+        <h2 class="section-title">레벨 선택</h2>
+        <div class="grid" id="levelList"></div>
+        <div class="controls">
+          <button class="sub" onclick="goBooks()">이전</button>
+        </div>
+      </div>
 
-<div id="book"></div>
-<div id="level"></div>
-<div id="chapter"></div>
-<div id="words"></div>
+      <div id="screenChapters" class="hidden">
+        <h2 class="section-title">Chapter 선택</h2>
+        <div class="grid" id="chapterList"></div>
+        <div class="controls">
+          <button class="sub" onclick="goLevels()">이전</button>
+        </div>
+      </div>
 
-</div>
+      <div id="screenCards" class="hidden">
+        <h2 class="section-title">단어 카드</h2>
+        <div class="count" id="countText"></div>
 
-<script>
+        <div class="card" id="wordCard" onclick="flipCard()">
+          <div class="card-inner">
+            <div class="card-label" id="cardLabel">영어</div>
+            <div class="card-word" id="cardWord">word</div>
+            <div class="card-meaning hidden" id="cardMeaning">뜻</div>
+          </div>
+        </div>
 
-const CSV_URL="vocab.csv"
+        <div class="controls">
+          <button class="sub" onclick="prevWord()">이전 단어</button>
+          <button onclick="speakWord()">발음 듣기</button>
+          <button class="sub" onclick="nextWord()">다음 단어</button>
+        </div>
 
-let data=[]
-let book=""
-let level=""
-let chapter=""
+        <div class="controls">
+          <button class="sub" onclick="goChapters()">Chapter 다시 선택</button>
+          <button class="sub" onclick="shuffleWords()">섞기</button>
+        </div>
 
-async function load(){
+        <div class="status">카드를 누르면 뜻이 뒤집힌다.</div>
+      </div>
+    </div>
+  </div>
 
-let res=await fetch(CSV_URL)
-let text=await res.text()
+  <script>
+    let vocabData = [];
+    let currentBook = "";
+    let currentLevel = "";
+    let currentChapter = "";
+    let currentWords = [];
+    let currentIndex = 0;
+    let showingMeaning = false;
 
-let rows=text.split("\n")
-let header=rows[0].split(",")
+    const screenBooks = document.getElementById("screenBooks");
+    const screenLevels = document.getElementById("screenLevels");
+    const screenChapters = document.getElementById("screenChapters");
+    const screenCards = document.getElementById("screenCards");
 
-for(let i=1;i<rows.length;i++){
+    const bookList = document.getElementById("bookList");
+    const levelList = document.getElementById("levelList");
+    const chapterList = document.getElementById("chapterList");
+    const loadStatus = document.getElementById("loadStatus");
+    const pathText = document.getElementById("pathText");
 
-let cols=rows[i].split(",")
+    const cardLabel = document.getElementById("cardLabel");
+    const cardWord = document.getElementById("cardWord");
+    const cardMeaning = document.getElementById("cardMeaning");
+    const countText = document.getElementById("countText");
 
-let obj={}
+    const fixedBookOrder = ["T-map", "V-map", "절대수능-map"];
 
-header.forEach((h,index)=>{
-obj[h.trim()]=cols[index]
-})
+    function showScreen(name) {
+      screenBooks.classList.add("hidden");
+      screenLevels.classList.add("hidden");
+      screenChapters.classList.add("hidden");
+      screenCards.classList.add("hidden");
 
-data.push(obj)
+      if (name === "books") screenBooks.classList.remove("hidden");
+      if (name === "levels") screenLevels.classList.remove("hidden");
+      if (name === "chapters") screenChapters.classList.remove("hidden");
+      if (name === "cards") screenCards.classList.remove("hidden");
 
-}
+      updatePath();
+    }
 
-renderBooks()
+    function updatePath() {
+      let parts = [];
+      if (currentBook) parts.push(currentBook);
+      if (currentLevel) parts.push(currentLevel);
+      if (currentChapter) parts.push("Chapter " + currentChapter);
 
-}
+      pathText.textContent = parts.length ? parts.join(" > ") : "교재 선택";
+    }
 
-function renderBooks(){
+    function normalizeKey(value) {
+      return String(value || "").trim();
+    }
 
-let books=[...new Set(data.map(v=>v["교재"]))]
+    function parseCSV(text) {
+      const rows = [];
+      let row = [];
+      let cell = "";
+      let inQuotes = false;
 
-let html="<div class='grid'>"
+      for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        const next = text[i + 1];
 
-books.forEach(b=>{
-html+=`
-<div class="card">
-<button onclick="selectBook('${b}')">${b}</button>
-</div>
-`
-})
+        if (char === '"') {
+          if (inQuotes && next === '"') {
+            cell += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (char === ',' && !inQuotes) {
+          row.push(cell);
+          cell = "";
+        } else if ((char === '\n' || char === '\r') && !inQuotes) {
+          if (char === '\r' && next === '\n') i++;
+          row.push(cell);
+          if (row.some(v => String(v).trim() !== "")) rows.push(row);
+          row = [];
+          cell = "";
+        } else {
+          cell += char;
+        }
+      }
 
-html+="</div>"
+      if (cell.length > 0 || row.length > 0) {
+        row.push(cell);
+        if (row.some(v => String(v).trim() !== "")) rows.push(row);
+      }
 
-document.getElementById("book").innerHTML=html
+      if (!rows.length) return [];
 
-}
+      const headers = rows[0].map(h => normalizeKey(h));
+      const data = rows.slice(1).map(cols => {
+        const obj = {};
+        headers.forEach((h, idx) => obj[h] = normalizeKey(cols[idx] || ""));
+        return obj;
+      });
 
-function selectBook(b){
+      return data;
+    }
 
-book=b
+    function unique(arr) {
+      return [...new Set(arr.filter(Boolean))];
+    }
 
-let levels=[...new Set(data.filter(v=>v["교재"]==b).map(v=>v["레벨"]))]
+    function sortChapters(arr) {
+      return [...arr].sort((a, b) => {
+        const na = Number(a);
+        const nb = Number(b);
+        const aNum = !isNaN(na);
+        const bNum = !isNaN(nb);
 
-let html="<div class='grid'>"
+        if (aNum && bNum) return na - nb;
+        if (aNum) return -1;
+        if (bNum) return 1;
+        return String(a).localeCompare(String(b), "ko");
+      });
+    }
 
-levels.forEach(l=>{
-html+=`
-<div class="card">
-<button onclick="selectLevel('${l}')">${l}</button>
-</div>
-`
-})
+    function renderBooks() {
+      const booksInData = unique(vocabData.map(v => v["교재"]));
+      const orderedBooks = fixedBookOrder.filter(b => booksInData.includes(b));
+      const extraBooks = booksInData.filter(b => !fixedBookOrder.includes(b));
+      const finalBooks = [...orderedBooks, ...extraBooks];
 
-html+="</div>"
+      bookList.innerHTML = "";
 
-document.getElementById("level").innerHTML=html
+      if (!finalBooks.length) {
+        bookList.innerHTML = '<div class="empty">표시할 교재가 없다.<br>vocab.csv 내용을 확인해라.</div>';
+        return;
+      }
 
-}
+      finalBooks.forEach(book => {
+        const btn = document.createElement("button");
+        btn.textContent = book;
+        btn.onclick = () => selectBook(book);
+        bookList.appendChild(btn);
+      });
+    }
 
-function selectLevel(l){
+    function selectBook(book) {
+      currentBook = book;
+      currentLevel = "";
+      currentChapter = "";
+      currentWords = [];
+      currentIndex = 0;
 
-level=l
+      const levels = unique(
+        vocabData
+          .filter(v => normalizeKey(v["교재"]) === book)
+          .map(v => v["레벨"])
+      );
 
-let chapters=[...new Set(data.filter(v=>v["교재"]==book && v["레벨"]==l).map(v=>v["Chapter"]))]
+      levelList.innerHTML = "";
 
-let html="<div class='grid'>"
+      levels.forEach(level => {
+        const btn = document.createElement("button");
+        btn.textContent = level;
+        btn.onclick = () => selectLevel(level);
+        levelList.appendChild(btn);
+      });
 
-chapters.forEach(c=>{
-html+=`
-<div class="card">
-<button onclick="selectChapter('${c}')">${c}</button>
-</div>
-`
-})
+      showScreen("levels");
+    }
 
-html+="</div>"
+    function selectLevel(level) {
+      currentLevel = level;
+      currentChapter = "";
+      currentWords = [];
+      currentIndex = 0;
 
-document.getElementById("chapter").innerHTML=html
+      const chapters = sortChapters(unique(
+        vocabData
+          .filter(v =>
+            normalizeKey(v["교재"]) === currentBook &&
+            normalizeKey(v["레벨"]) === currentLevel
+          )
+          .map(v => v["Chapter"])
+      ));
 
-}
+      chapterList.innerHTML = "";
 
-function selectChapter(c){
+      chapters.forEach(chapter => {
+        const btn = document.createElement("button");
+        btn.textContent = "Chapter " + chapter;
+        btn.onclick = () => selectChapter(chapter);
+        chapterList.appendChild(btn);
+      });
 
-chapter=c
+      showScreen("chapters");
+    }
 
-let words=data.filter(v=>
-v["교재"]==book &&
-v["레벨"]==level &&
-v["Chapter"]==chapter
-)
+    function selectChapter(chapter) {
+      currentChapter = chapter;
 
-let html=""
+      currentWords = vocabData.filter(v =>
+        normalizeKey(v["교재"]) === currentBook &&
+        normalizeKey(v["레벨"]) === currentLevel &&
+        normalizeKey(v["Chapter"]) === String(chapter)
+      );
 
-words.forEach(w=>{
-html+=`
-<div class="card">
-<div class="word">${w["영어"]}</div>
-<div class="mean">${w["뜻"]}</div>
-</div>
-`
-})
+      currentIndex = 0;
+      showingMeaning = false;
+      renderCard();
+      showScreen("cards");
+    }
 
-document.getElementById("words").innerHTML=html
+    function renderCard() {
+      if (!currentWords.length) {
+        cardLabel.textContent = "알림";
+        cardWord.textContent = "단어가 없다";
+        cardMeaning.textContent = "";
+        countText.textContent = "";
+        return;
+      }
 
-}
+      const item = currentWords[currentIndex];
+      const eng = item["영어"] || "";
+      const kor = item["뜻"] || "";
 
-load()
+      countText.textContent = `${currentIndex + 1} / ${currentWords.length}`;
 
-</script>
+      if (showingMeaning) {
+        cardLabel.textContent = "뜻";
+        cardWord.classList.add("hidden");
+        cardMeaning.classList.remove("hidden");
+        cardMeaning.textContent = kor;
+      } else {
+        cardLabel.textContent = "영어";
+        cardMeaning.classList.add("hidden");
+        cardWord.classList.remove("hidden");
+        cardWord.textContent = eng;
+      }
+    }
 
+    function flipCard() {
+      if (!currentWords.length) return;
+      showingMeaning = !showingMeaning;
+      renderCard();
+    }
+
+    function nextWord() {
+      if (!currentWords.length) return;
+      currentIndex = (currentIndex + 1) % currentWords.length;
+      showingMeaning = false;
+      renderCard();
+    }
+
+    function prevWord() {
+      if (!currentWords.length) return;
+      currentIndex = (currentIndex - 1 + currentWords.length) % currentWords.length;
+      showingMeaning = false;
+      renderCard();
+    }
+
+    function shuffleWords() {
+      if (!currentWords.length) return;
+      for (let i = currentWords.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [currentWords[i], currentWords[j]] = [currentWords[j], currentWords[i]];
+      }
+      currentIndex = 0;
+      showingMeaning = false;
+      renderCard();
+    }
+
+    function speakWord() {
+      if (!currentWords.length) return;
+      const text = currentWords[currentIndex]["영어"] || "";
+      if (!text) return;
+
+      if (!("speechSynthesis" in window)) {
+        alert("이 기기에서는 음성 기능을 지원하지 않는다.");
+        return;
+      }
+
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = "en-US";
+      utter.rate = 0.95;
+      window.speechSynthesis.speak(utter);
+    }
+
+    function goBooks() {
+      currentBook = "";
+      currentLevel = "";
+      currentChapter = "";
+      showScreen("books");
+    }
+
+    function goLevels() {
+      currentLevel = "";
+      currentChapter = "";
+      showScreen("levels");
+    }
+
+    function goChapters() {
+      currentChapter = "";
+      showScreen("chapters");
+    }
+
+    async function loadCSV() {
+      try {
+        const res = await fetch("./vocab.csv?v=" + Date.now());
+        if (!res.ok) throw new Error("CSV 로드 실패");
+        const text = await res.text();
+
+        vocabData = parseCSV(text).filter(v =>
+          normalizeKey(v["교재"]) &&
+          normalizeKey(v["레벨"]) &&
+          normalizeKey(v["Chapter"]) &&
+          normalizeKey(v["영어"]) &&
+          normalizeKey(v["뜻"])
+        );
+
+        if (!vocabData.length) {
+          loadStatus.textContent = "데이터가 없다. vocab.csv 헤더랑 내용 확인해라.";
+        } else {
+          loadStatus.textContent = `불러오기 완료 (${vocabData.length}개 단어)`;
+        }
+
+        renderBooks();
+      } catch (e) {
+        loadStatus.textContent = "vocab.csv를 못 읽었다. 파일명이나 업로드 상태 확인해라.";
+        console.error(e);
+      }
+    }
+
+    loadCSV();
+  </script>
 </body>
 </html>
