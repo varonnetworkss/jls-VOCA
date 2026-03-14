@@ -1,34 +1,37 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>서수원 JLS 단어장</title>
-<style>
 *{box-sizing:border-box}
 
 :root{
-  --bg1:#f4f7ff;
-  --bg2:#eef3ff;
+  --bg1:#f7f8fc;
+  --bg2:#eef1f7;
   --card:#ffffff;
-  --line:#dbe4ff;
-  --line-soft:#e7ecf8;
-  --text:#1f2a44;
-  --sub:#6b7894;
-  --primary:#4f7cff;
-  --primary-soft:#edf3ff;
-  --mint:#eafaf3;
-  --mint-line:#bfe8d0;
+  --line:#d9deea;
+  --line-soft:#e8ebf3;
+  --text:#1c2340;
+  --sub:#6d748d;
+
+  /* JLS 느낌 */
+  --primary:#1f2f6b;       /* 네이비 */
+  --primary-strong:#16234f;
+  --primary-soft:#eef2ff;
+  --accent:#d7263d;        /* 레드 */
+  --accent-soft:#fff1f3;
+  --gold:#c8a96b;          /* 은은한 포인트 */
+  --gold-soft:#faf5ea;
+
+  --mint:#edf9f2;
+  --mint-line:#bfe2cb;
   --red:#fff1f1;
-  --red-line:#f0b8b8;
-  --shadow:0 10px 30px rgba(79,124,255,0.08);
-  --shadow-soft:0 6px 18px rgba(31,42,68,0.06);
+  --red-line:#efb7bc;
+
+  --shadow:0 10px 28px rgba(20,35,79,0.08);
+  --shadow-soft:0 6px 16px rgba(20,35,79,0.06);
 }
 
 body{
   margin:0;
   font-family:Arial,sans-serif;
-  background:radial-gradient(circle at top left, #fdfdff 0%, #f4f7ff 35%, #eef3ff 100%);
+  background:
+    linear-gradient(180deg, #f9fafc 0%, #f1f4fa 100%);
   color:var(--text);
 }
 
@@ -42,7 +45,7 @@ h1{
   margin:0 0 16px 0;
   font-size:32px;
   font-weight:800;
-  color:var(--text);
+  color:var(--primary);
   letter-spacing:-0.5px;
 }
 
@@ -50,11 +53,12 @@ h1{
   position:sticky;
   top:0;
   z-index:100;
-  background:rgba(244,247,255,0.82);
-  backdrop-filter:blur(10px);
-  -webkit-backdrop-filter:blur(10px);
+  background:rgba(249,250,252,0.92);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
   padding:16px 0 14px 0;
   margin-bottom:6px;
+  border-bottom:2px solid rgba(31,47,107,0.06);
 }
 
 .controls{
@@ -65,21 +69,22 @@ h1{
 }
 
 .btn{
-  border:1px solid var(--line);
+  border:1px solid #cfd6e6;
   background:#fff;
-  color:var(--text);
+  color:var(--primary);
   border-radius:12px;
   padding:10px 14px;
   cursor:pointer;
   font-size:14px;
-  font-weight:700;
+  font-weight:800;
   box-shadow:var(--shadow-soft);
   transition:all .18s ease;
 }
 
 .btn:hover{
-  background:var(--primary-soft);
-  border-color:#bfd0ff;
+  background:var(--primary);
+  color:#fff;
+  border-color:var(--primary);
   transform:translateY(-1px);
 }
 
@@ -87,7 +92,7 @@ h1{
   font-size:14px;
   color:var(--sub);
   margin-bottom:10px;
-  font-weight:600;
+  font-weight:700;
 }
 
 .grid{
@@ -97,8 +102,9 @@ h1{
 }
 
 .card{
-  background:linear-gradient(180deg,#ffffff 0%, #f9fbff 100%);
+  background:linear-gradient(180deg,#ffffff 0%, #fbfcff 100%);
   border:1px solid var(--line);
+  border-top:4px solid var(--primary);
   border-radius:20px;
   padding:16px;
   cursor:pointer;
@@ -109,21 +115,22 @@ h1{
   text-align:center;
   font-size:20px;
   font-weight:800;
-  color:var(--text);
+  color:var(--primary);
   box-shadow:var(--shadow);
   transition:all .18s ease;
 }
 
 .card:hover{
   transform:translateY(-3px);
-  background:linear-gradient(180deg,#ffffff 0%, #f1f6ff 100%);
-  border-color:#bfd0ff;
-  box-shadow:0 14px 32px rgba(79,124,255,0.13);
+  border-color:#c5cede;
+  border-top-color:var(--accent);
+  box-shadow:0 14px 30px rgba(20,35,79,0.12);
 }
 
 .word-card{
-  background:linear-gradient(180deg,#ffffff 0%, #fbfcff 100%);
+  background:linear-gradient(180deg,#ffffff 0%, #fcfcfe 100%);
   border:1px solid var(--line-soft);
+  border-left:5px solid var(--primary);
   border-radius:18px;
   padding:14px 16px;
   display:flex;
@@ -136,8 +143,8 @@ h1{
 
 .word-card:hover{
   transform:translateY(-2px);
-  border-color:#cbd8ff;
-  box-shadow:0 12px 24px rgba(79,124,255,0.08);
+  border-left-color:var(--accent);
+  box-shadow:0 10px 22px rgba(20,35,79,0.09);
 }
 
 .word-left{
@@ -162,8 +169,9 @@ h1{
 }
 
 .speak-btn{
-  border:1px solid var(--line);
-  background:linear-gradient(180deg,#ffffff 0%, #f3f7ff 100%);
+  border:1px solid #d5dcec;
+  background:var(--primary-soft);
+  color:var(--primary);
   border-radius:12px;
   width:44px;
   height:36px;
@@ -175,8 +183,9 @@ h1{
 }
 
 .speak-btn:hover{
-  background:var(--primary-soft);
-  border-color:#bfd0ff;
+  background:var(--accent-soft);
+  color:var(--accent);
+  border-color:#efc2c8;
   transform:translateY(-1px) scale(1.03);
 }
 
@@ -190,7 +199,7 @@ h1{
 .hidden-meaning{display:none}
 
 .loading, .empty{
-  background:linear-gradient(180deg,#ffffff 0%, #f9fbff 100%);
+  background:#fff;
   border:1px solid var(--line);
   border-radius:18px;
   padding:30px;
@@ -201,8 +210,9 @@ h1{
 
 /* 테스트 */
 .test-wrap{
-  background:linear-gradient(180deg,#ffffff 0%, #fafcff 100%);
+  background:#fff;
   border:1px solid var(--line);
+  border-top:5px solid var(--primary);
   border-radius:22px;
   padding:20px;
   box-shadow:var(--shadow);
@@ -220,17 +230,17 @@ h1{
 .test-progress{
   font-size:14px;
   color:var(--sub);
-  font-weight:700;
+  font-weight:800;
 }
 
 .question-box{
-  background:linear-gradient(180deg,#f6f9ff 0%, #eef4ff 100%);
-  border:1px solid #d9e4ff;
+  background:linear-gradient(180deg,#f7f9ff 0%, #eef2fb 100%);
+  border:1px solid #d8deed;
   border-radius:18px;
   padding:28px 24px;
   margin-bottom:16px;
   text-align:center;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,0.7);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.8);
 }
 
 .question-label{
@@ -242,8 +252,8 @@ h1{
 
 .question-word{
   font-size:32px;
-  font-weight:800;
-  color:#23408e;
+  font-weight:900;
+  color:var(--primary);
   word-break:break-word;
   letter-spacing:-0.3px;
 }
@@ -256,7 +266,7 @@ h1{
 
 .choice-btn{
   border:1px solid var(--line-soft);
-  background:linear-gradient(180deg,#ffffff 0%, #fbfcff 100%);
+  background:#fff;
   border-radius:16px;
   padding:16px;
   cursor:pointer;
@@ -266,29 +276,31 @@ h1{
   color:var(--text);
   box-shadow:var(--shadow-soft);
   transition:all .16s ease;
+  font-weight:700;
 }
 
 .choice-btn:hover{
   background:var(--primary-soft);
-  border-color:#c5d5ff;
+  border-color:#c4cde0;
   transform:translateY(-2px);
 }
 
 .choice-btn.correct{
   border-color:var(--mint-line);
   background:var(--mint);
-  color:#1e6a45;
+  color:#1d6d45;
 }
 
 .choice-btn.wrong{
   border-color:var(--red-line);
   background:var(--red);
-  color:#a33a3a;
+  color:#a23642;
 }
 
 .test-result{
-  background:linear-gradient(180deg,#ffffff 0%, #fafcff 100%);
+  background:#fff;
   border:1px solid var(--line);
+  border-top:5px solid var(--accent);
   border-radius:22px;
   padding:28px 24px;
   text-align:center;
@@ -299,7 +311,7 @@ h1{
   font-size:36px;
   font-weight:900;
   margin-bottom:10px;
-  color:#23408e;
+  color:var(--primary);
 }
 
 .result-sub{
@@ -325,627 +337,3 @@ h1{
   .question-word{font-size:24px}
   h1{font-size:28px}
 }
-</style>
-</head>
-<body>
-<div class="wrap">
-  <div class="topbar">
-    <h1>서수원 JLS 단어장</h1>
-    <div class="path" id="path">로딩 중...</div>
-    <div class="controls" id="controls"></div>
-  </div>
-  <div id="app" class="loading">단어 데이터를 불러오는 중...</div>
-</div>
-
-<script>
-let rawData = [];
-
-let state = {
-  book: null,
-  level: null,
-  section: null,
-  chapter: null,
-  hideWord: false,
-  hideMeaning: false,
-  mode: "browse"
-};
-
-let testState = {
-  questions: [],
-  currentIndex: 0,
-  score: 0,
-  selected: null,
-  answered: false
-};
-
-const app = document.getElementById("app");
-const controls = document.getElementById("controls");
-const pathEl = document.getElementById("path");
-
-function parseCSV(text){
-  const rows = [];
-  let row = [];
-  let cell = "";
-  let inQuotes = false;
-
-  for(let i = 0; i < text.length; i++){
-    const char = text[i];
-    const next = text[i + 1];
-
-    if(char === '"'){
-      if(inQuotes && next === '"'){
-        cell += '"';
-        i++;
-      }else{
-        inQuotes = !inQuotes;
-      }
-    }else if((char === ',' || char === '\t') && !inQuotes){
-      row.push(cell);
-      cell = "";
-    }else if((char === '\n' || char === '\r') && !inQuotes){
-      if(char === '\r' && next === '\n') i++;
-      row.push(cell);
-      if(row.some(v => String(v).trim() !== "")){
-        rows.push(row);
-      }
-      row = [];
-      cell = "";
-    }else{
-      cell += char;
-    }
-  }
-
-  if(cell !== "" || row.length){
-    row.push(cell);
-    rows.push(row);
-  }
-
-  return rows;
-}
-
-function normalizeHeader(v){
-  return String(v || "").replace(/\uFEFF/g, "").trim();
-}
-
-function escapeHtml(text){
-  return String(text || "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
-
-function getUnique(arr, key){
-  return [...new Set(arr.map(x => String(x[key] || "").trim()).filter(Boolean))];
-}
-
-function shuffle(arr){
-  const copy = [...arr];
-  for(let i = copy.length - 1; i > 0; i--){
-    const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
-  }
-  return copy;
-}
-
-function speakWord(word){
-  if (!("speechSynthesis" in window)) {
-    alert("이 기기에서는 음성 재생을 지원하지 않습니다.");
-    return;
-  }
-
-  const synth = window.speechSynthesis;
-  synth.cancel();
-
-  const speak = () => {
-    const u = new SpeechSynthesisUtterance(word);
-    u.lang = "en-US";
-    u.rate = 0.9;
-    u.pitch = 1;
-    u.volume = 1;
-
-    const voices = synth.getVoices();
-    const voice =
-      voices.find(v => v.lang === "en-US") ||
-      voices.find(v => v.lang.startsWith("en")) ||
-      voices[0];
-
-    if (voice) u.voice = voice;
-    synth.speak(u);
-  };
-
-  const voices = synth.getVoices();
-  if (voices.length === 0) {
-    synth.onvoiceschanged = () => {
-      speak();
-      synth.onvoiceschanged = null;
-    };
-    setTimeout(speak, 300);
-  } else {
-    speak();
-  }
-}
-
-function renderControls(){
-  let html = "";
-
-  if(state.book){
-    html += `<button class="btn" data-action="home">처음으로</button>`;
-  }
-  if(state.book && !state.level){
-    html += `<button class="btn" data-action="back-books">← 교재</button>`;
-  }
-  if(state.level && !state.section){
-    html += `<button class="btn" data-action="back-levels">← 레벨</button>`;
-  }
-  if(state.section && !state.chapter){
-    html += `<button class="btn" data-action="back-sections">← 구간</button>`;
-  }
-
-  if(state.chapter && state.mode === "browse"){
-    html += `<button class="btn" data-action="back-chapters">← Chapter</button>`;
-    html += `<button class="btn" data-action="toggle-meaning">${state.hideMeaning ? "뜻 보이기" : "뜻 숨기기"}</button>`;
-    html += `<button class="btn" data-action="toggle-word">${state.hideWord ? "영어 보이기" : "영어 숨기기"}</button>`;
-    html += `<button class="btn" data-action="start-test">테스트 시작</button>`;
-  }
-
-  if(state.chapter && state.mode === "test"){
-    html += `<button class="btn" data-action="exit-test">단어장으로 돌아가기</button>`;
-  }
-
-  if(state.chapter && state.mode === "result"){
-    html += `<button class="btn" data-action="restart-test">다시 테스트</button>`;
-    html += `<button class="btn" data-action="exit-test">단어장으로 돌아가기</button>`;
-  }
-
-  controls.innerHTML = html;
-}
-
-function renderPath(){
-  const parts = ["홈"];
-  if(state.book) parts.push(state.book);
-  if(state.level) parts.push(state.level);
-  if(state.section) parts.push(state.section);
-  if(state.chapter) parts.push(`Chapter ${state.chapter}`);
-  if(state.mode === "test") parts.push("테스트");
-  if(state.mode === "result") parts.push("결과");
-  pathEl.textContent = parts.join(" > ");
-}
-
-function renderBooks(){
-  const books = getUnique(rawData, "교재");
-
-  if(!books.length){
-    app.innerHTML = `<div class="empty">데이터가 없습니다.</div>`;
-    return;
-  }
-
-  app.innerHTML = `
-    <div class="grid">
-      ${books.map(book => `
-        <div class="card" data-type="book" data-value="${escapeHtml(book)}">${escapeHtml(book)}</div>
-      `).join("")}
-    </div>
-  `;
-}
-
-function renderLevels(){
-  const rows = rawData.filter(x => x["교재"] === state.book);
-  const levels = getUnique(rows, "레벨");
-
-  if(!levels.length){
-    app.innerHTML = `<div class="empty">해당 교재의 레벨 데이터가 없습니다.</div>`;
-    return;
-  }
-
-  app.innerHTML = `
-    <div class="grid">
-      ${levels.map(level => `
-        <div class="card" data-type="level" data-value="${escapeHtml(level)}">${escapeHtml(level)}</div>
-      `).join("")}
-    </div>
-  `;
-}
-
-function renderSections(){
-  const rows = rawData.filter(x =>
-    x["교재"] === state.book &&
-    x["레벨"] === state.level
-  );
-  const sections = getUnique(rows, "구간");
-
-  if(!sections.length){
-    app.innerHTML = `<div class="empty">해당 레벨의 구간 데이터가 없습니다.</div>`;
-    return;
-  }
-
-  app.innerHTML = `
-    <div class="grid">
-      ${sections.map(section => `
-        <div class="card" data-type="section" data-value="${escapeHtml(section)}">${escapeHtml(section)}</div>
-      `).join("")}
-    </div>
-  `;
-}
-
-function renderChapters(){
-  const rows = rawData.filter(x =>
-    x["교재"] === state.book &&
-    x["레벨"] === state.level &&
-    x["구간"] === state.section
-  );
-
-  const chapters = getUnique(rows, "Chapter").sort((a, b) => Number(a) - Number(b));
-
-  if(!chapters.length){
-    app.innerHTML = `<div class="empty">해당 구간의 Chapter 데이터가 없습니다.</div>`;
-    return;
-  }
-
-  app.innerHTML = `
-    <div class="grid">
-      ${chapters.map(ch => `
-        <div class="card" data-type="chapter" data-value="${escapeHtml(ch)}">Chapter ${escapeHtml(ch)}</div>
-      `).join("")}
-    </div>
-  `;
-}
-
-function getCurrentChapterRows(){
-  return rawData.filter(x =>
-    x["교재"] === state.book &&
-    x["레벨"] === state.level &&
-    x["구간"] === state.section &&
-    x["Chapter"] === state.chapter
-  );
-}
-
-function renderWords(){
-  const rows = getCurrentChapterRows();
-
-  if(!rows.length){
-    app.innerHTML = `<div class="empty">해당 Chapter의 단어 데이터가 없습니다.</div>`;
-    return;
-  }
-
-  app.innerHTML = `
-    <div class="word-grid">
-      ${rows.map((row, i) => `
-        <div class="word-card">
-          <div class="word-left">
-            <div class="word ${state.hideWord ? "hidden-word" : ""}">${i + 1}. ${escapeHtml(row["영어"])}</div>
-            <div class="meaning ${state.hideMeaning ? "hidden-meaning" : ""}">${escapeHtml(row["뜻"])}</div>
-          </div>
-          <button class="speak-btn" data-type="speak" data-value="${escapeHtml(row["영어"])}">🔊</button>
-        </div>
-      `).join("")}
-    </div>
-  `;
-}
-
-function buildTestQuestions(rows){
-  const usable = rows.filter(r => r["영어"] && r["뜻"]);
-  const shuffled = shuffle(usable);
-
-  return shuffled.map(row => {
-    const correct = row["뜻"];
-    const wrongPool = shuffle(
-      usable
-        .map(x => x["뜻"])
-        .filter(v => v && v !== correct)
-    ).slice(0, 3);
-
-    const choices = shuffle([correct, ...wrongPool]);
-
-    return {
-      word: row["영어"],
-      correct,
-      choices
-    };
-  });
-}
-
-function startTest(){
-  const rows = getCurrentChapterRows();
-
-  if(rows.length < 4){
-    alert("테스트를 하려면 해당 Chapter에 단어가 최소 4개 있어야 한다.");
-    return;
-  }
-
-  testState = {
-    questions: buildTestQuestions(rows),
-    currentIndex: 0,
-    score: 0,
-    selected: null,
-    answered: false
-  };
-
-  state.mode = "test";
-  render();
-}
-
-function renderTest(){
-  const q = testState.questions[testState.currentIndex];
-
-  if(!q){
-    state.mode = "result";
-    render();
-    return;
-  }
-
-  app.innerHTML = `
-    <div class="test-wrap">
-      <div class="test-top">
-        <div class="test-progress">${testState.currentIndex + 1} / ${testState.questions.length}</div>
-        <div class="test-progress">점수 ${testState.score}</div>
-      </div>
-
-      <div class="question-box">
-        <div class="question-label">다음 영어의 뜻은?</div>
-        <div class="question-word">${escapeHtml(q.word)}</div>
-      </div>
-
-      <div class="choice-grid">
-        ${q.choices.map(choice => {
-          let cls = "choice-btn";
-
-          if(testState.answered){
-            if(choice === q.correct) cls += " correct";
-            else if(choice === testState.selected && choice !== q.correct) cls += " wrong";
-          }
-
-          return `
-            <button
-              class="${cls}"
-              data-type="choice"
-              data-value="${escapeHtml(choice)}"
-              ${testState.answered ? "disabled" : ""}
-            >
-              ${escapeHtml(choice)}
-            </button>
-          `;
-        }).join("")}
-      </div>
-    </div>
-  `;
-}
-
-function handleChoice(choice){
-  if(testState.answered) return;
-
-  const q = testState.questions[testState.currentIndex];
-  testState.selected = choice;
-  testState.answered = true;
-
-  if(choice === q.correct){
-    testState.score += 1;
-  }
-
-  renderTest();
-
-  setTimeout(() => {
-    testState.currentIndex += 1;
-    testState.selected = null;
-    testState.answered = false;
-
-    if(testState.currentIndex >= testState.questions.length){
-      state.mode = "result";
-      render();
-    }else{
-      renderTest();
-      renderControls();
-      renderPath();
-    }
-  }, 800);
-}
-
-function renderResult(){
-  const total = testState.questions.length;
-  const score = testState.score;
-  const percent = total ? Math.round((score / total) * 100) : 0;
-
-  app.innerHTML = `
-    <div class="test-result">
-      <div class="result-score">${score} / ${total}</div>
-      <div class="result-sub">정답률 ${percent}%</div>
-      <div class="result-buttons">
-        <button class="btn" data-action="restart-test">다시 테스트</button>
-        <button class="btn" data-action="exit-test">단어장으로 돌아가기</button>
-      </div>
-    </div>
-  `;
-}
-
-function render(){
-  renderControls();
-  renderPath();
-
-  if(!state.book) return renderBooks();
-  if(!state.level) return renderLevels();
-  if(!state.section) return renderSections();
-  if(!state.chapter) return renderChapters();
-
-  if(state.mode === "browse") return renderWords();
-  if(state.mode === "test") return renderTest();
-  if(state.mode === "result") return renderResult();
-}
-
-function goHome(){
-  state = {
-    book: null,
-    level: null,
-    section: null,
-    chapter: null,
-    hideWord: false,
-    hideMeaning: false,
-    mode: "browse"
-  };
-  render();
-}
-
-function loadDataToState(type, value){
-  if(type === "book"){
-    state.book = value;
-    state.level = null;
-    state.section = null;
-    state.chapter = null;
-    state.hideWord = false;
-    state.hideMeaning = false;
-    state.mode = "browse";
-  } else if(type === "level"){
-    state.level = value;
-    state.section = null;
-    state.chapter = null;
-    state.hideWord = false;
-    state.hideMeaning = false;
-    state.mode = "browse";
-  } else if(type === "section"){
-    state.section = value;
-    state.chapter = null;
-    state.hideWord = false;
-    state.hideMeaning = false;
-    state.mode = "browse";
-  } else if(type === "chapter"){
-    state.chapter = value;
-    state.hideWord = false;
-    state.hideMeaning = false;
-    state.mode = "browse";
-  }
-  render();
-}
-
-controls.addEventListener("click", function(e){
-  const btn = e.target.closest("[data-action]");
-  if(!btn) return;
-
-  const action = btn.dataset.action;
-
-  if(action === "home") goHome();
-
-  if(action === "back-books"){
-    state.book = null;
-    state.level = null;
-    state.section = null;
-    state.chapter = null;
-    state.hideWord = false;
-    state.hideMeaning = false;
-    state.mode = "browse";
-    render();
-  }
-
-  if(action === "back-levels"){
-    state.level = null;
-    state.section = null;
-    state.chapter = null;
-    state.hideWord = false;
-    state.hideMeaning = false;
-    state.mode = "browse";
-    render();
-  }
-
-  if(action === "back-sections"){
-    state.section = null;
-    state.chapter = null;
-    state.hideWord = false;
-    state.hideMeaning = false;
-    state.mode = "browse";
-    render();
-  }
-
-  if(action === "back-chapters"){
-    state.chapter = null;
-    state.hideWord = false;
-    state.hideMeaning = false;
-    state.mode = "browse";
-    render();
-  }
-
-  if(action === "toggle-meaning"){
-    state.hideMeaning = !state.hideMeaning;
-    renderControls();
-    renderWords();
-  }
-
-  if(action === "toggle-word"){
-    state.hideWord = !state.hideWord;
-    renderControls();
-    renderWords();
-  }
-
-  if(action === "start-test"){
-    startTest();
-  }
-
-  if(action === "exit-test"){
-    state.mode = "browse";
-    render();
-  }
-
-  if(action === "restart-test"){
-    startTest();
-  }
-});
-
-app.addEventListener("click", function(e){
-  const target = e.target.closest("[data-type]");
-  if(!target) return;
-
-  const type = target.dataset.type;
-  const value = target.dataset.value;
-
-  if(type === "speak"){
-    speakWord(value);
-    return;
-  }
-
-  if(type === "choice"){
-    handleChoice(value);
-    return;
-  }
-
-  loadDataToState(type, value);
-});
-
-async function loadData(){
-  try{
-    const res = await fetch("./vocab.csv?ts=" + Date.now());
-    const text = await res.text();
-    const rows = parseCSV(text);
-
-    if(rows.length < 2){
-      app.innerHTML = `<div class="empty">CSV 데이터가 비어있다.</div>`;
-      return;
-    }
-
-    const headers = rows[0].map(normalizeHeader);
-    const required = ["교재", "레벨", "구간", "Chapter", "영어", "뜻"];
-    const missing = required.filter(x => !headers.includes(x));
-
-    if(missing.length){
-      app.innerHTML = `<div class="empty">CSV 헤더가 맞지 않다.<br>누락: ${missing.join(", ")}</div>`;
-      return;
-    }
-
-    rawData = rows.slice(1)
-      .filter(r => r.some(v => String(v).trim() !== ""))
-      .map(r => {
-        const obj = {};
-        headers.forEach((h, i) => {
-          obj[h] = String(r[i] || "").trim();
-        });
-        return obj;
-      });
-
-    window.speechSynthesis?.getVoices();
-    render();
-  }catch(e){
-    app.innerHTML = `<div class="empty">데이터를 불러오지 못했다.<br>파일 이름이 vocab.csv인지 확인해라.</div>`;
-  }
-}
-
-loadData();
-</script>
-</body>
-</html>
