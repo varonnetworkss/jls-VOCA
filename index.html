@@ -1,1094 +1,216 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>서수원 JLS 단어장</title>
-  <style>
-    * { box-sizing: border-box; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>서수원 JLS 단어장</title>
 
-    :root{
-      --bg:#f6f7fb;
-      --card:#ffffff;
-      --text:#111827;
-      --sub:#6b7280;
-      --line:#e5e7eb;
-      --primary:#4f46e5;
-      --primary-soft:#eef2ff;
-      --shadow:0 12px 30px rgba(17,24,39,.08);
-      --shadow-soft:0 6px 18px rgba(17,24,39,.05);
-    }
+<style>
 
-    html,body{
-      margin:0;
-      padding:0;
-      background:linear-gradient(180deg,#f9faff 0%,#f4f6fb 100%);
-      color:var(--text);
-      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
-      min-height:100vh;
-    }
+body{
+margin:0;
+font-family:Arial;
+background:#f5f6fa;
+}
 
-    body{ padding:18px 12px 36px; }
+.wrap{
+max-width:900px;
+margin:auto;
+padding:20px;
+}
 
-    .app{
-      max-width:920px;
-      margin:0 auto;
-    }
+.top{
+background:linear-gradient(135deg,#5b7cff,#7c4dff);
+color:white;
+padding:30px;
+border-radius:25px;
+}
 
-    .hero{
-      background:linear-gradient(135deg,#5b7cff,#7c4dff);
-      color:#fff;
-      border-radius:30px;
-      padding:26px 20px 22px;
-      box-shadow:0 16px 36px rgba(92,84,255,.24);
-      margin-bottom:18px;
-    }
+h1{
+margin:0;
+}
 
-    .hero h1{
-      margin:0;
-      font-size:30px;
-      font-weight:900;
-      letter-spacing:-.6px;
-    }
+button{
+cursor:pointer;
+border:none;
+padding:10px 15px;
+border-radius:10px;
+}
 
-    .hero p{
-      margin:10px 0 0;
-      font-size:14px;
-      color:rgba(255,255,255,.9);
-      line-height:1.5;
-    }
+.card{
+background:white;
+padding:20px;
+border-radius:15px;
+margin-top:10px;
+box-shadow:0 5px 10px rgba(0,0,0,0.1);
+}
 
-    .top-actions{
-      margin-top:16px;
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-    }
+.grid{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:10px;
+}
 
-    button{
-      border:none;
-      cursor:pointer;
-      transition:.15s ease;
-      font-family:inherit;
-    }
+.word{
+font-size:24px;
+font-weight:bold;
+}
 
-    button:hover{ transform:translateY(-1px); }
+.mean{
+margin-top:5px;
+color:#555;
+}
 
-    .ghost-btn{
-      background:rgba(255,255,255,.16);
-      color:#fff;
-      padding:10px 14px;
-      border-radius:999px;
-      font-size:13px;
-      font-weight:800;
-      backdrop-filter:blur(8px);
-    }
+.hidden{
+display:none;
+}
 
-    .section{ margin-top:20px; }
-    .hidden{ display:none !important; }
-
-    .section-title{
-      font-size:20px;
-      font-weight:900;
-      margin:0 0 14px;
-      letter-spacing:-.3px;
-    }
-
-    .section-sub{
-      margin:-2px 0 14px;
-      font-size:13px;
-      color:var(--sub);
-    }
-
-    .grid-3{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:14px;
-    }
-
-    .grid-2{
-      display:grid;
-      grid-template-columns:repeat(2,1fr);
-      gap:14px;
-    }
-
-    .choice-card{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:28px;
-      padding:22px 18px;
-      min-height:120px;
-      box-shadow:var(--shadow);
-      text-align:left;
-      display:flex;
-      flex-direction:column;
-      justify-content:space-between;
-    }
-
-    .choice-card:hover{
-      border-color:#c7d2fe;
-      box-shadow:0 16px 34px rgba(79,70,229,.12);
-    }
-
-    .choice-label{
-      font-size:26px;
-      font-weight:900;
-      letter-spacing:-.6px;
-      color:var(--text);
-    }
-
-    .choice-desc{
-      margin-top:8px;
-      font-size:13px;
-      color:var(--sub);
-      line-height:1.5;
-    }
-
-    .choice-chip{
-      margin-top:14px;
-      align-self:flex-start;
-      padding:7px 11px;
-      border-radius:999px;
-      background:var(--primary-soft);
-      color:var(--primary);
-      font-size:12px;
-      font-weight:800;
-    }
-
-    .toolbar{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      margin-bottom:14px;
-    }
-
-    .tool-btn{
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:999px;
-      padding:10px 14px;
-      font-size:13px;
-      font-weight:800;
-      color:#374151;
-      box-shadow:var(--shadow-soft);
-    }
-
-    .tool-btn.primary{
-      background:var(--primary);
-      color:#fff;
-      border-color:var(--primary);
-    }
-
-    .chapter-grid{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:12px;
-    }
-
-    .chapter-btn{
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:20px;
-      padding:18px 16px;
-      text-align:left;
-      box-shadow:var(--shadow-soft);
-    }
-
-    .chapter-btn strong{
-      display:block;
-      font-size:18px;
-      font-weight:900;
-      color:var(--text);
-      margin-bottom:6px;
-    }
-
-    .chapter-btn span{
-      font-size:13px;
-      color:var(--sub);
-    }
-
-    .search-wrap{
-      display:flex;
-      gap:10px;
-      margin-bottom:14px;
-      flex-wrap:wrap;
-    }
-
-    .search-input{
-      flex:1;
-      min-width:200px;
-      height:48px;
-      border:1px solid var(--line);
-      border-radius:16px;
-      padding:0 14px;
-      font-size:14px;
-      background:#fff;
-      outline:none;
-      box-shadow:var(--shadow-soft);
-    }
-
-    .search-input:focus,
-    .test-input:focus{
-      border-color:#c7d2fe;
-      box-shadow:0 0 0 4px rgba(79,70,229,.08);
-    }
-
-    .stats{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-bottom:16px;
-    }
-
-    .stat-card{
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:20px;
-      padding:14px 16px;
-      min-width:130px;
-      box-shadow:var(--shadow-soft);
-    }
-
-    .stat-label{
-      font-size:12px;
-      color:var(--sub);
-      margin-bottom:6px;
-      font-weight:700;
-    }
-
-    .stat-value{
-      font-size:22px;
-      font-weight:900;
-      letter-spacing:-.3px;
-    }
-
-    .word-list{
-      display:grid;
-      gap:14px;
-    }
-
-    .word-card{
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:24px;
-      padding:18px;
-      box-shadow:var(--shadow);
-    }
-
-    .word-top{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:12px;
-    }
-
-    .word-en{
-      font-size:26px;
-      font-weight:900;
-      letter-spacing:-.6px;
-      line-height:1.15;
-      margin-bottom:8px;
-      color:#111827;
-      word-break:break-word;
-    }
-
-    .word-ko{
-      font-size:15px;
-      color:#4b5563;
-      line-height:1.6;
-      word-break:break-word;
-    }
-
-    .badge{
-      flex-shrink:0;
-      padding:8px 12px;
-      border-radius:999px;
-      background:var(--primary-soft);
-      color:var(--primary);
-      font-size:12px;
-      font-weight:900;
-    }
-
-    .meta-row{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      margin-top:14px;
-    }
-
-    .meta-chip{
-      padding:7px 10px;
-      border-radius:999px;
-      background:#f3f4f6;
-      color:#4b5563;
-      font-size:12px;
-      font-weight:800;
-    }
-
-    .test-shell{
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:28px;
-      padding:22px 18px;
-      box-shadow:var(--shadow);
-    }
-
-    .test-progress{
-      display:inline-flex;
-      align-items:center;
-      padding:8px 12px;
-      border-radius:999px;
-      background:var(--primary-soft);
-      color:var(--primary);
-      font-size:12px;
-      font-weight:900;
-      margin-bottom:14px;
-    }
-
-    .test-question{
-      font-size:34px;
-      font-weight:900;
-      line-height:1.2;
-      letter-spacing:-.7px;
-      margin-bottom:18px;
-    }
-
-    .test-input{
-      width:100%;
-      height:52px;
-      border:1px solid var(--line);
-      border-radius:18px;
-      padding:0 14px;
-      font-size:15px;
-      outline:none;
-      background:#fff;
-      margin-bottom:14px;
-      box-shadow:var(--shadow-soft);
-    }
-
-    .test-actions{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-    }
-
-    .test-btn{
-      border-radius:999px;
-      padding:11px 16px;
-      font-size:14px;
-      font-weight:900;
-    }
-
-    .test-btn.primary{
-      background:var(--primary);
-      color:#fff;
-    }
-
-    .test-btn.soft{
-      background:#eef2ff;
-      color:var(--primary);
-    }
-
-    .result-box{
-      margin-top:16px;
-      padding:14px 16px;
-      border-radius:18px;
-      font-size:14px;
-      font-weight:900;
-    }
-
-    .result-correct{
-      background:#ecfdf5;
-      color:#047857;
-    }
-
-    .result-wrong{
-      background:#fef2f2;
-      color:#b91c1c;
-    }
-
-    .score-box{
-      margin-top:18px;
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:24px;
-      padding:20px 18px;
-      box-shadow:var(--shadow-soft);
-    }
-
-    .score-big{
-      font-size:30px;
-      font-weight:900;
-      margin-bottom:8px;
-      color:var(--primary);
-    }
-
-    .score-sub{
-      font-size:14px;
-      color:var(--sub);
-    }
-
-    .empty-box,
-    .error-box{
-      background:#fff;
-      border:1px dashed #cbd5e1;
-      border-radius:22px;
-      padding:20px 18px;
-      color:var(--sub);
-      font-weight:700;
-      box-shadow:var(--shadow-soft);
-    }
-
-    .error-box{
-      border-style:solid;
-      border-color:#fecaca;
-      background:#fff7f7;
-      color:#991b1b;
-      line-height:1.6;
-    }
-
-    @media (max-width:760px){
-      .grid-3,.grid-2,.chapter-grid{ grid-template-columns:1fr; }
-      .hero h1{ font-size:24px; }
-      .choice-label{ font-size:24px; }
-      .word-en{ font-size:22px; }
-      .test-question{ font-size:28px; }
-      .top-actions button,
-      .test-actions button,
-      .toolbar button{ width:100%; }
-    }
-  </style>
+</style>
 </head>
+
 <body>
-  <div class="app">
-    <div class="hero">
-      <h1>서수원 JLS 단어장</h1>
-      <p>교재 선택부터 시작해서 레벨, 챕터, 단어 테스트까지 한 번에.</p>
-
-      <div class="top-actions">
-        <button class="ghost-btn" id="homeBtn">처음으로</button>
-        <button class="ghost-btn" id="backBtn">뒤로가기</button>
-      </div>
-    </div>
-
-    <div id="globalError" class="error-box hidden"></div>
-
-    <section class="section" id="bookSection">
-      <h2 class="section-title">교재 선택</h2>
-      <p class="section-sub">먼저 보고 싶은 단어장을 골라줘.</p>
-      <div class="grid-3" id="bookGrid"></div>
-    </section>
-
-    <section class="section hidden" id="levelSection">
-      <h2 class="section-title">레벨 선택</h2>
-      <p class="section-sub" id="levelSubText"></p>
-      <div class="grid-2" id="levelGrid"></div>
-    </section>
-
-    <section class="section hidden" id="chapterSection">
-      <h2 class="section-title">챕터 선택</h2>
-      <p class="section-sub" id="chapterSubText"></p>
-
-      <div class="toolbar">
-        <button class="tool-btn" id="goLevelBtn">레벨 다시 선택</button>
-      </div>
-
-      <div class="chapter-grid" id="chapterGrid"></div>
-    </section>
-
-    <section class="section hidden" id="wordSection">
-      <h2 class="section-title">단어 목록</h2>
-      <p class="section-sub" id="wordSubText"></p>
-
-      <div class="toolbar">
-        <button class="tool-btn" id="goChapterBtn">챕터 다시 선택</button>
-        <button class="tool-btn primary" id="startTestBtn">테스트 시작</button>
-      </div>
-
-      <div class="search-wrap">
-        <input type="text" id="searchInput" class="search-input" placeholder="영어 / 뜻 검색" />
-      </div>
-
-      <div class="stats">
-        <div class="stat-card">
-          <div class="stat-label">현재 교재</div>
-          <div class="stat-value" id="statBook">-</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">현재 레벨</div>
-          <div class="stat-value" id="statLevel">-</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">현재 챕터</div>
-          <div class="stat-value" id="statChapter">-</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">단어 수</div>
-          <div class="stat-value" id="statCount">0</div>
-        </div>
-      </div>
-
-      <div class="word-list" id="wordList"></div>
-    </section>
-
-    <section class="section hidden" id="testSection">
-      <h2 class="section-title">단어 테스트</h2>
-      <p class="section-sub" id="testSubText"></p>
-
-      <div class="toolbar">
-        <button class="tool-btn" id="backToWordsBtn">단어 목록으로</button>
-      </div>
-
-      <div class="test-shell">
-        <div class="test-progress" id="testProgress">0 / 0 문제</div>
-        <div class="test-question" id="testQuestion">word</div>
-        <input type="text" id="testAnswer" class="test-input" placeholder="뜻을 입력하세요" />
-
-        <div class="test-actions">
-          <button class="test-btn primary" id="checkAnswerBtn">정답 확인</button>
-          <button class="test-btn soft" id="nextQuestionBtn">다음 문제</button>
-        </div>
-
-        <div id="resultBox" style="display:none;"></div>
-      </div>
-
-      <div class="score-box" id="scoreBox" style="display:none;">
-        <div class="score-big" id="scoreText">0점</div>
-        <div class="score-sub" id="scoreSubText">테스트 완료</div>
-      </div>
-    </section>
-  </div>
-
-  <script>
-    const CSV_URL = "words.csv";
-
-    const BOOK_LABELS = [
-      { raw: "T-map", label: "티맵", desc: "기본 학습 단어장", aliases: ["t-map", "tmap", "티맵"] },
-      { raw: "V-map", label: "브이맵", desc: "확장 학습 단어장", aliases: ["v-map", "vmap", "브이맵"] },
-      { raw: "절대수능-map", label: "절대수능맵", desc: "수능 대비 단어장", aliases: ["절대수능-map", "절대수능map", "절대수능맵"] }
-    ];
-
-    let allWords = [];
-    let currentBook = "";
-    let currentLevel = "";
-    let currentChapter = "";
-    let currentWords = [];
-    let filteredWords = [];
-
-    let testWords = [];
-    let testIndex = 0;
-    let correctCount = 0;
-    let answeredCurrent = false;
-
-    const bookSection = document.getElementById("bookSection");
-    const levelSection = document.getElementById("levelSection");
-    const chapterSection = document.getElementById("chapterSection");
-    const wordSection = document.getElementById("wordSection");
-    const testSection = document.getElementById("testSection");
-    const globalError = document.getElementById("globalError");
-
-    const bookGrid = document.getElementById("bookGrid");
-    const levelGrid = document.getElementById("levelGrid");
-    const chapterGrid = document.getElementById("chapterGrid");
-    const wordList = document.getElementById("wordList");
-
-    const levelSubText = document.getElementById("levelSubText");
-    const chapterSubText = document.getElementById("chapterSubText");
-    const wordSubText = document.getElementById("wordSubText");
-    const testSubText = document.getElementById("testSubText");
-
-    const statBook = document.getElementById("statBook");
-    const statLevel = document.getElementById("statLevel");
-    const statChapter = document.getElementById("statChapter");
-    const statCount = document.getElementById("statCount");
-
-    const searchInput = document.getElementById("searchInput");
-    const startTestBtn = document.getElementById("startTestBtn");
-    const goLevelBtn = document.getElementById("goLevelBtn");
-    const goChapterBtn = document.getElementById("goChapterBtn");
-    const homeBtn = document.getElementById("homeBtn");
-    const backBtn = document.getElementById("backBtn");
-    const backToWordsBtn = document.getElementById("backToWordsBtn");
-
-    const testProgress = document.getElementById("testProgress");
-    const testQuestion = document.getElementById("testQuestion");
-    const testAnswer = document.getElementById("testAnswer");
-    const checkAnswerBtn = document.getElementById("checkAnswerBtn");
-    const nextQuestionBtn = document.getElementById("nextQuestionBtn");
-    const resultBox = document.getElementById("resultBox");
-    const scoreBox = document.getElementById("scoreBox");
-    const scoreText = document.getElementById("scoreText");
-    const scoreSubText = document.getElementById("scoreSubText");
-
-    async function loadCSV() {
-      try {
-        const res = await fetch(CSV_URL, { cache: "no-store" });
-        if (!res.ok) {
-          throw new Error(`CSV 파일을 불러오지 못함 (${res.status})`);
-        }
-
-        const text = await res.text();
-        const rows = parseCSV(text);
-
-        if (!rows.length) {
-          throw new Error("CSV에 데이터가 없음");
-        }
-
-        const headerKeys = Object.keys(rows[0]);
-        const keyMap = detectKeyMap(headerKeys);
-
-        const missing = [];
-        if (!keyMap.book) missing.push("교재");
-        if (!keyMap.level) missing.push("레벨");
-        if (!keyMap.english) missing.push("영어");
-        if (!keyMap.meaning) missing.push("뜻");
-
-        if (missing.length) {
-          throw new Error(`CSV 헤더를 찾지 못함: ${missing.join(", ")}`);
-        }
-
-        allWords = rows.map((row, idx) => ({
-          id: pickValue(row, keyMap.id) || idx + 1,
-          book: pickValue(row, keyMap.book),
-          level: pickValue(row, keyMap.level),
-          chapterCode: pickValue(row, keyMap.chapterCode),
-          chapterName: pickValue(row, keyMap.chapterName),
-          english: pickValue(row, keyMap.english),
-          meaning: pickValue(row, keyMap.meaning)
-        })).filter(v => v.book && v.level && v.english && v.meaning);
-
-        if (!allWords.length) {
-          throw new Error("읽어온 단어 데이터가 0개임");
-        }
-
-        renderBookCards();
-      } catch (err) {
-        showGlobalError(
-          `데이터를 불러오지 못했다.<br>` +
-          `1) CSV 파일명이 <b>${escapeHtml(CSV_URL)}</b> 맞는지<br>` +
-          `2) 헤더가 <b>교재, 레벨, 구간, Chapter, 영어, 뜻</b> 중 비슷하게 들어있는지<br>` +
-          `3) GitHub에 CSV가 같이 올라가 있는지 확인해봐.<br><br>` +
-          `오류: ${escapeHtml(err.message)}`
-        );
-        console.error(err);
-      }
-    }
-
-    function parseCSV(text) {
-      const lines = text.replace(/^\uFEFF/, "").trim().split(/\r?\n/);
-      if (!lines.length) return [];
-
-      const headers = splitCSVLine(lines[0]);
-
-      return lines.slice(1).filter(Boolean).map(line => {
-        const values = splitCSVLine(line);
-        const row = {};
-        headers.forEach((h, i) => {
-          row[h] = values[i] ?? "";
-        });
-        return row;
-      });
-    }
-
-    function splitCSVLine(line) {
-      const result = [];
-      let current = "";
-      let inQuotes = false;
-
-      for (let i = 0; i < line.length; i++) {
-        const char = line[i];
-        const next = line[i + 1];
-
-        if (char === '"') {
-          if (inQuotes && next === '"') {
-            current += '"';
-            i++;
-          } else {
-            inQuotes = !inQuotes;
-          }
-        } else if (char === "," && !inQuotes) {
-          result.push(current.trim());
-          current = "";
-        } else {
-          current += char;
-        }
-      }
-
-      result.push(current.trim());
-      return result;
-    }
-
-    function detectKeyMap(headers) {
-      const map = {};
-      map.book = findHeader(headers, ["교재", "book"]);
-      map.level = findHeader(headers, ["레벨", "level"]);
-      map.chapterCode = findHeader(headers, ["구간", "chaptercode", "chapter_code", "챕터코드"]);
-      map.chapterName = findHeader(headers, ["chapter", "챕터", "chapter name", "chaptername"]);
-      map.english = findHeader(headers, ["영어", "단어", "english", "word"]);
-      map.meaning = findHeader(headers, ["뜻", "의미", "meaning", "korean"]);
-      map.id = findHeader(headers, ["id", "ID", "아이디"]);
-      return map;
-    }
-
-    function findHeader(headers, candidates) {
-      const normalizedHeaders = headers.map(h => normalize(h));
-      for (const candidate of candidates) {
-        const idx = normalizedHeaders.indexOf(normalize(candidate));
-        if (idx >= 0) return headers[idx];
-      }
-      return "";
-    }
-
-    function pickValue(row, key) {
-      return key ? String(row[key] ?? "").trim() : "";
-    }
-
-    function showGlobalError(html) {
-      globalError.innerHTML = html;
-      globalError.classList.remove("hidden");
-    }
-
-    function hideGlobalError() {
-      globalError.classList.add("hidden");
-      globalError.innerHTML = "";
-    }
-
-    function renderBookCards() {
-      hideGlobalError();
-
-      bookGrid.innerHTML = BOOK_LABELS.map(item => `
-        <button class="choice-card" onclick="selectBook('${escapeAttr(item.raw)}')">
-          <div>
-            <div class="choice-label">${item.label}</div>
-            <div class="choice-desc">${item.desc}</div>
-          </div>
-          <div class="choice-chip">선택하기</div>
-        </button>
-      `).join("");
-    }
-
-    function selectBook(book) {
-      currentBook = book;
-      currentLevel = "";
-      currentChapter = "";
-      currentWords = [];
-      filteredWords = [];
-
-      const levels = [...new Set(
-        allWords
-          .filter(v => isSameBook(v.book, book))
-          .map(v => v.level)
-          .filter(Boolean)
-      )];
-
-      levelSubText.textContent = `${getBookLabel(book)}의 레벨을 골라줘.`;
-
-      levelGrid.innerHTML = levels.length
-        ? levels.map(level => `
-            <button class="choice-card" onclick="selectLevel('${escapeAttr(level)}')">
-              <div>
-                <div class="choice-label">${escapeHtml(level)}</div>
-                <div class="choice-desc">이 레벨 단어장으로 들어가기</div>
-              </div>
-              <div class="choice-chip">선택하기</div>
-            </button>
-          `).join("")
-        : `<div class="empty-box">해당 교재에 레벨 데이터가 없다.</div>`;
-
-      showSection("level");
-    }
-
-    function selectLevel(level) {
-      currentLevel = level;
-      currentChapter = "";
-      currentWords = [];
-      filteredWords = [];
-
-      const chapterItems = allWords
-        .filter(v => isSameBook(v.book, currentBook) && normalize(v.level) === normalize(level))
-        .map(v => ({
-          code: v.chapterCode || "",
-          name: v.chapterName || ""
-        }));
-
-      const uniqueChapters = [];
-      const seen = new Set();
-
-      chapterItems.forEach(item => {
-        const key = `${normalize(item.code)}||${normalize(item.name)}`;
-        if (!seen.has(key)) {
-          seen.add(key);
-          uniqueChapters.push(item);
-        }
-      });
-
-      chapterSubText.textContent = `${getBookLabel(currentBook)} · ${currentLevel} 챕터를 골라줘.`;
-
-      chapterGrid.innerHTML = uniqueChapters.length
-        ? uniqueChapters.map(item => `
-            <button class="chapter-btn" onclick="selectChapter('${escapeAttr(item.code)}','${escapeAttr(item.name)}')">
-              <strong>${escapeHtml(item.code || item.name || "-")}</strong>
-              <span>${escapeHtml(item.name || "챕터 선택")}</span>
-            </button>
-          `).join("")
-        : `<div class="empty-box">해당 레벨에 챕터 데이터가 없다.</div>`;
-
-      showSection("chapter");
-    }
-
-    function selectChapter(code, name) {
-      currentChapter = code || name;
-
-      currentWords = allWords.filter(v =>
-        isSameBook(v.book, currentBook) &&
-        normalize(v.level) === normalize(currentLevel) &&
-        normalize(v.chapterCode || v.chapterName) === normalize(currentChapter)
-      );
-
-      filteredWords = [...currentWords];
-
-      wordSubText.textContent = `${getBookLabel(currentBook)} · ${currentLevel} · ${currentChapter}`;
-      statBook.textContent = getBookLabel(currentBook);
-      statLevel.textContent = currentLevel;
-      statChapter.textContent = currentChapter;
-      statCount.textContent = filteredWords.length;
-
-      searchInput.value = "";
-      renderWordList(filteredWords);
-      showSection("word");
-    }
-
-    function renderWordList(words) {
-      statCount.textContent = words.length;
-
-      if (!words.length) {
-        wordList.innerHTML = `<div class="empty-box">조건에 맞는 단어가 없다.</div>`;
-        return;
-      }
-
-      wordList.innerHTML = words.map(item => `
-        <div class="word-card">
-          <div class="word-top">
-            <div>
-              <div class="word-en">${escapeHtml(item.english)}</div>
-              <div class="word-ko">${escapeHtml(item.meaning)}</div>
-            </div>
-            <div class="badge">${escapeHtml(item.chapterCode || item.chapterName || "-")}</div>
-          </div>
-
-          <div class="meta-row">
-            <div class="meta-chip">${escapeHtml(getBookLabel(item.book))}</div>
-            <div class="meta-chip">${escapeHtml(item.level)}</div>
-            <div class="meta-chip">${escapeHtml(item.chapterName || item.chapterCode || "-")}</div>
-          </div>
-        </div>
-      `).join("");
-    }
-
-    function filterWords() {
-      const keyword = normalize(searchInput.value);
-
-      if (!keyword) {
-        filteredWords = [...currentWords];
-      } else {
-        filteredWords = currentWords.filter(item =>
-          normalize(item.english).includes(keyword) ||
-          normalize(item.meaning).includes(keyword)
-        );
-      }
-
-      renderWordList(filteredWords);
-    }
-
-    function startTest() {
-      if (!filteredWords.length) {
-        alert("테스트할 단어가 없다.");
-        return;
-      }
-
-      testWords = [...filteredWords];
-      testIndex = 0;
-      correctCount = 0;
-      answeredCurrent = false;
-
-      testSubText.textContent = `${getBookLabel(currentBook)} · ${currentLevel} · ${currentChapter}`;
-      scoreBox.style.display = "none";
-      showSection("test");
-      renderQuestion();
-    }
-
-    function renderQuestion() {
-      if (testIndex >= testWords.length) {
-        finishTest();
-        return;
-      }
-
-      const current = testWords[testIndex];
-      testProgress.textContent = `${testIndex + 1} / ${testWords.length} 문제`;
-      testQuestion.textContent = current.english;
-      testAnswer.value = "";
-      testAnswer.focus();
-      answeredCurrent = false;
-      resultBox.style.display = "none";
-      resultBox.className = "";
-      resultBox.textContent = "";
-    }
-
-    function checkAnswer() {
-      if (testIndex >= testWords.length || answeredCurrent) return;
-
-      const current = testWords[testIndex];
-      const userAnswer = normalize(testAnswer.value);
-      const correctAnswer = normalize(current.meaning);
-
-      answeredCurrent = true;
-
-      if (userAnswer && correctAnswer.includes(userAnswer)) {
-        correctCount++;
-        resultBox.className = "result-box result-correct";
-        resultBox.textContent = `정답! ${current.meaning}`;
-      } else {
-        resultBox.className = "result-box result-wrong";
-        resultBox.textContent = `오답! 정답: ${current.meaning}`;
-      }
-
-      resultBox.style.display = "block";
-    }
-
-    function nextQuestion() {
-      if (testIndex >= testWords.length) return;
-
-      if (!answeredCurrent) {
-        checkAnswer();
-        return;
-      }
-
-      testIndex++;
-      renderQuestion();
-    }
-
-    function finishTest() {
-      const score = Math.round((correctCount / testWords.length) * 100);
-
-      testProgress.textContent = "테스트 완료";
-      testQuestion.textContent = "끝!";
-      testAnswer.value = "";
-      resultBox.style.display = "none";
-
-      scoreBox.style.display = "block";
-      scoreText.textContent = `${score}점`;
-      scoreSubText.textContent = `${testWords.length}문제 중 ${correctCount}개 정답`;
-    }
-
-    function showSection(type) {
-      bookSection.classList.add("hidden");
-      levelSection.classList.add("hidden");
-      chapterSection.classList.add("hidden");
-      wordSection.classList.add("hidden");
-      testSection.classList.add("hidden");
-
-      if (type === "book") bookSection.classList.remove("hidden");
-      if (type === "level") levelSection.classList.remove("hidden");
-      if (type === "chapter") chapterSection.classList.remove("hidden");
-      if (type === "word") wordSection.classList.remove("hidden");
-      if (type === "test") testSection.classList.remove("hidden");
-    }
-
-    function goHome() {
-      currentBook = "";
-      currentLevel = "";
-      currentChapter = "";
-      currentWords = [];
-      filteredWords = [];
-      showSection("book");
-    }
-
-    function goBack() {
-      if (!testSection.classList.contains("hidden")) {
-        showSection("word");
-        return;
-      }
-      if (!wordSection.classList.contains("hidden")) {
-        showSection("chapter");
-        return;
-      }
-      if (!chapterSection.classList.contains("hidden")) {
-        showSection("level");
-        return;
-      }
-      if (!levelSection.classList.contains("hidden")) {
-        showSection("book");
-      }
-    }
-
-    function getBookLabel(raw) {
-      const norm = normalize(raw);
-      const found = BOOK_LABELS.find(v =>
-        normalize(v.raw) === norm || v.aliases.some(a => normalize(a) === norm)
-      );
-      return found ? found.label : raw;
-    }
-
-    function isSameBook(csvBook, selectedBook) {
-      const csvNorm = normalize(csvBook);
-      const selectedNorm = normalize(selectedBook);
-
-      const selectedObj = BOOK_LABELS.find(v => normalize(v.raw) === selectedNorm);
-      if (!selectedObj) return csvNorm === selectedNorm;
-
-      return (
-        csvNorm === selectedNorm ||
-        csvNorm === normalize(selectedObj.label) ||
-        selectedObj.aliases.some(a => normalize(a) === csvNorm)
-      );
-    }
-
-    function normalize(value) {
-      return String(value || "")
-        .replace(/\s+/g, "")
-        .replace(/_/g, "")
-        .trim()
-        .toLowerCase();
-    }
-
-    function escapeHtml(str) {
-      return String(str ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-
-    function escapeAttr(str) {
-      return String(str ?? "").replaceAll("'", "\\'");
-    }
-
-    searchInput.addEventListener("input", filterWords);
-    startTestBtn.addEventListener("click", startTest);
-    goLevelBtn.addEventListener("click", () => showSection("level"));
-    goChapterBtn.addEventListener("click", () => showSection("chapter"));
-    backToWordsBtn.addEventListener("click", () => showSection("word"));
-    homeBtn.addEventListener("click", goHome);
-    backBtn.addEventListener("click", goBack);
-    checkAnswerBtn.addEventListener("click", checkAnswer);
-    nextQuestionBtn.addEventListener("click", nextQuestion);
-
-    testAnswer.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        if (!answeredCurrent) {
-          checkAnswer();
-        } else {
-          nextQuestion();
-        }
-      }
-    });
-
-    loadCSV();
-
-    window.selectBook = selectBook;
-    window.selectLevel = selectLevel;
-    window.selectChapter = selectChapter;
-  </script>
+
+<div class="wrap">
+
+<div class="top">
+<h1>서수원 JLS 단어장</h1>
+<p>교재 선택 → 레벨 → 챕터 → 단어 테스트</p>
+</div>
+
+<div id="book"></div>
+<div id="level"></div>
+<div id="chapter"></div>
+<div id="words"></div>
+
+</div>
+
+<script>
+
+const CSV_URL="vocab.csv"
+
+let data=[]
+let book=""
+let level=""
+let chapter=""
+
+async function load(){
+
+let res=await fetch(CSV_URL)
+let text=await res.text()
+
+let rows=text.split("\n")
+let header=rows[0].split(",")
+
+for(let i=1;i<rows.length;i++){
+
+let cols=rows[i].split(",")
+
+let obj={}
+
+header.forEach((h,index)=>{
+obj[h.trim()]=cols[index]
+})
+
+data.push(obj)
+
+}
+
+renderBooks()
+
+}
+
+function renderBooks(){
+
+let books=[...new Set(data.map(v=>v["교재"]))]
+
+let html="<div class='grid'>"
+
+books.forEach(b=>{
+html+=`
+<div class="card">
+<button onclick="selectBook('${b}')">${b}</button>
+</div>
+`
+})
+
+html+="</div>"
+
+document.getElementById("book").innerHTML=html
+
+}
+
+function selectBook(b){
+
+book=b
+
+let levels=[...new Set(data.filter(v=>v["교재"]==b).map(v=>v["레벨"]))]
+
+let html="<div class='grid'>"
+
+levels.forEach(l=>{
+html+=`
+<div class="card">
+<button onclick="selectLevel('${l}')">${l}</button>
+</div>
+`
+})
+
+html+="</div>"
+
+document.getElementById("level").innerHTML=html
+
+}
+
+function selectLevel(l){
+
+level=l
+
+let chapters=[...new Set(data.filter(v=>v["교재"]==book && v["레벨"]==l).map(v=>v["Chapter"]))]
+
+let html="<div class='grid'>"
+
+chapters.forEach(c=>{
+html+=`
+<div class="card">
+<button onclick="selectChapter('${c}')">${c}</button>
+</div>
+`
+})
+
+html+="</div>"
+
+document.getElementById("chapter").innerHTML=html
+
+}
+
+function selectChapter(c){
+
+chapter=c
+
+let words=data.filter(v=>
+v["교재"]==book &&
+v["레벨"]==level &&
+v["Chapter"]==chapter
+)
+
+let html=""
+
+words.forEach(w=>{
+html+=`
+<div class="card">
+<div class="word">${w["영어"]}</div>
+<div class="mean">${w["뜻"]}</div>
+</div>
+`
+})
+
+document.getElementById("words").innerHTML=html
+
+}
+
+load()
+
+</script>
+
 </body>
 </html>
