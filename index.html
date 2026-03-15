@@ -671,6 +671,10 @@ function detectPos(word, meaningKor = ""){
   if(!key && !kor) return "";
 
   if(FORCE_POS[key]) return FORCE_POS[key];
+
+    if(key === "taint"){
+    if(/더럽히다|오염시키다/.test(kor)) return "verb";
+    if(/오점|오명/.test(kor)) return "noun";
   
     if(key === "material"){
     if(/재료|물질|자료/.test(kor)) return "noun";
