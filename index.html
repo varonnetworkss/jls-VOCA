@@ -683,58 +683,139 @@ function shuffle(arr){
   return copy;
 }
 
-async function getWordMeta(word){
+function formatPos(pos){
+  const map = {
+    noun: "명사",
+    verb: "동사",
+    adjective: "형용사",
+    adverb: "부사",
+    pronoun: "대명사",
+    preposition: "전치사",
+    conjunction: "접속사",
+    interjection: "감탄사"
+  };
+  return map[pos] || pos || "품사 없음";
+}
+
+function guessPosFromKor(korText){
+  const text = String(korText || "").trim();
+  if(!text) return "";
+
+  if(
+    /하다$|되다$|시키다$|받다$|주다$|가다$|오다$|보다$|말하다$|쓰다$|만들다$|보여주다$|알리다$|언급하다$|설명하다$|제안하다$|포함하다$|사용하다$|유발하다$|제공하다$|개선하다$|변화하다$|줄이다$|늘리다$|선택하다$|정리하다$|추가하다$|삭제하다$/.test(text)
+  ){
+    return "verb";
+  }
+
+  if(
+    /한$|적인$|스러운$|로운$|같은$|있는$|없는$|중요한$|가능한$|어려운$|쉬운$|편향된$|치우친$|특정한$|적절한$|필요한$|유명한$|간단한$/.test(text)
+  ){
+    return "adjective";
+  }
+
+  if(/하게$|히$|껏$/.test(text)){
+    return "adverb";
+  }
+
+  return "noun";
+}
+
+function pickByPriority(list, priorities){
+  for(const p of priorities){
+    const found = list.find(x => x.pos === p);
+    if(found) return found;
+  }
+  return list[0];
+}
+
+async function getWordMeta(word, meaningKor = ""){
   const key = String(word || "").trim().toLowerCase();
+  const kor = String(meaningKor || "").trim();
+
   if(!key) return { pos:"품사 없음", example:"예문 없음" };
 
-  if(wordMetaCache[key]) return wordMetaCache[key];
+  const cacheKey = `${key}__${kor}`;
+  if(wordMetaCache[cacheKey]) return wordMetaCache[cacheKey];
 
   try{
     const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(key)}`);
     if(!res.ok) throw new Error("not found");
 
     const data = await res.json();
-
-    let pos = "";
-    let example = "";
+    const candidates = [];
 
     if(Array.isArray(data)){
       for(const entry of data){
-        if(Array.isArray(entry.meanings)){
-          for(const meaning of entry.meanings){
-            if(!pos && meaning.partOfSpeech){
-              pos = meaning.partOfSpeech;
-            }
+        if(!Array.isArray(entry.meanings)) continue;
 
-            if(Array.isArray(meaning.definitions)){
-              for(const def of meaning.definitions){
-                if(!example && def.example){
-                  example = def.example;
-                }
-                if(pos && example) break;
-              }
-            }
+        for(const meaning of entry.meanings){
+          const part = meaning.partOfSpeech || "";
+          let example = "";
 
-            if(pos && example) break;
+          if(Array.isArray(meaning.definitions)){
+            const found = meaning.definitions.find(d => d && d.example);
+            if(found?.example) example = found.example;
           }
+
+          candidates.push({
+            pos: part,
+            example: example || "예문 없음"
+          });
         }
-        if(pos && example) break;
       }
     }
 
+    if(!candidates.length){
+      const result = { pos:"품사 없음", example:"예문 없음" };
+      wordMetaCache[cacheKey] = result;
+      return result;
+    }
+
+    let picked = null;
+
+    // 1. 한글 뜻 기준
+    const guessedPos = guessPosFromKor(kor);
+    if(guessedPos){
+      picked = pickByPriority(candidates, [guessedPos, "noun", "verb", "adjective", "adverb"]);
+    }
+
+    // 2. 영어 형태 기준
+    if(!picked){
+      if(key.endsWith("ed")){
+        picked = pickByPriority(candidates, ["adjective", "verb", "noun"]);
+      }else if(key.endsWith("ing")){
+        picked = pickByPriority(candidates, ["noun", "adjective", "verb"]);
+      }else{
+        picked = candidates[0];
+      }
+    }
+
+    // 3. 한글 뜻 세부 보정
+    if(/환경|상황|장소|배경|조건|설정|무대/.test(kor)){
+      picked = pickByPriority(candidates, ["noun", "adjective", "verb"]);
+    }
+
+    if(/편향된|치우친|기울어진|스러운|로운/.test(kor)){
+      picked = pickByPriority(candidates, ["adjective", "verb", "noun"]);
+    }
+
+    if(/언급하다|말하다|설명하다|제안하다|포함하다|사용하다|개선하다|제공하다|표현하다|보여주다/.test(kor)){
+      picked = pickByPriority(candidates, ["verb", "noun", "adjective"]);
+    }
+
     const result = {
-      pos: pos || "품사 없음",
-      example: example || "예문 없음"
+      pos: picked?.pos || "품사 없음",
+      example: picked?.example || "예문 없음"
     };
 
-    wordMetaCache[key] = result;
+    wordMetaCache[cacheKey] = result;
     return result;
   }catch(e){
     const result = {
-      pos: "품사 없음",
-      example: "예문 없음"
+      pos:"품사 없음",
+      example:"예문 없음"
     };
-    wordMetaCache[key] = result;
+    wordMetaCache[cacheKey] = result;
     return result;
   }
 }
@@ -935,10 +1016,10 @@ function renderWords(){
     const metaEl = document.getElementById(`meta-${i}`);
     if(!metaEl) return;
 
-    const meta = await getWordMeta(row["영어"]);
+    const meta = await getWordMeta(row["영어"], row["뜻"]);
 
     metaEl.innerHTML = `
-      <div class="pos">품사: ${escapeHtml(meta.pos)}</div>
+      <div class="pos">품사: ${escapeHtml(formatPos(meta.pos))}</div>
       <div class="example">예문: ${escapeHtml(meta.example)}</div>
     `;
   });
