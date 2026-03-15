@@ -673,6 +673,17 @@ function detectPos(word, meaningKor = ""){
 
   if(FORCE_POS[key]) return FORCE_POS[key];
 
+  if(
+  key === "air conditioner" ||
+  key === "credit card" ||
+  key === "post office" ||
+  key === "police station" ||
+  key === "school bus"
+){
+  return "noun";
+}
+
+
   if(key === "taint"){
     if(/더럽히다|오염시키다/.test(kor)) return "verb";
     if(/오점|오명/.test(kor)) return "noun";
