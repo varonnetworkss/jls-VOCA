@@ -672,15 +672,23 @@ function detectPos(word, meaningKor = ""){
 
   if(FORCE_POS[key]) return FORCE_POS[key];
 
-    if(key === "taint"){
+    function detectPos(word, meaningKor = ""){
+  const key = String(word || "").trim().toLowerCase();
+  const kor = String(meaningKor || "").trim();
+
+  if(!key && !kor) return "";
+
+  if(FORCE_POS[key]) return FORCE_POS[key];
+
+  if(key === "taint"){
     if(/더럽히다|오염시키다/.test(kor)) return "verb";
     if(/오점|오명/.test(kor)) return "noun";
-  
-    if(key === "material"){
+  }
+
+  if(key === "material"){
     if(/재료|물질|자료/.test(kor)) return "noun";
     if(/물질적인|중대한/.test(kor)) return "adjective";
   }
-
 
   if(key.includes(" ")){
     if(/such as|thanks to|according to|because of|instead of|as for|as to/.test(key)){
@@ -728,6 +736,7 @@ function detectPos(word, meaningKor = ""){
 
   return "";
 }
+
 
 function guessPosFromKor(korText){
   const text = String(korText || "").trim();
