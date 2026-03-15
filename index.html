@@ -30,16 +30,11 @@
   --bg2:#f8fbff;
   --card:#ffffff;
   --line:#dbe6fb;
-  --line-strong:#bfd2f6;
   --blue:#2f80ed;
   --blue-deep:#264db6;
-  --blue-soft:#66b0ff;
+  --shadow:0 16px 36px rgba(36,71,166,0.11);
   --text:#23438d;
   --text-soft:#6f82b0;
-  --shadow:0 16px 36px rgba(36,71,166,0.11);
-  --shadow-soft:0 10px 22px rgba(36,71,166,0.08);
-  --yellow:#ffd86a;
-  --pink:#ff8fc7;
 }
 
 html{
@@ -49,8 +44,7 @@ html{
 body{
   margin:0;
   font-family:'GeekbleMalang','Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;
-  background:
-    radial-gradient(circle at top, #fbfdff 0%, #edf4ff 42%, #e6eefc 100%);
+  background:radial-gradient(circle at top, #fbfdff 0%, #edf4ff 42%, #e6eefc 100%);
   color:#111;
 }
 
@@ -115,9 +109,7 @@ body{
   border:1px solid rgba(255,255,255,0.26);
   color:#fff6bf;
   font-size:20px;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.18),
-    0 8px 18px rgba(0,0,0,0.10);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.18), 0 8px 18px rgba(0,0,0,0.10);
   flex:0 0 auto;
 }
 
@@ -369,7 +361,6 @@ body{
   font-size:18px;
 }
 
-/* 테스트 */
 .test-wrap{
   background:linear-gradient(180deg,#ffffff 0%, #f9fbff 100%);
   border:1px solid #dde7ff;
@@ -478,86 +469,29 @@ body{
 }
 
 @media (max-width:700px){
-  .wrap{
-    padding:0 12px 22px;
-  }
-
+  .wrap{padding:0 12px 22px;}
   .topbar{
     margin:0 -12px 16px;
     padding:16px 12px 14px;
     border-bottom-left-radius:26px;
     border-bottom-right-radius:26px;
   }
-
-  .brand-logo{
-    width:54px;
-    height:54px;
-  }
-
-  .title-badge{
-    width:38px;
-    height:38px;
-    border-radius:12px;
-    font-size:18px;
-  }
-
-  .title-sub{
-    letter-spacing:0.8px;
-  }
-
-  .grid{
-    grid-template-columns:repeat(2,minmax(0,1fr));
-    padding:14px;
-    gap:12px;
-  }
-
-  .card{
-    min-height:102px;
-    padding:20px 14px;
-    border-radius:22px;
-    font-size:clamp(22px,5vw,28px);
-  }
-
-  .word-grid{
-    padding:14px;
-    gap:12px;
-  }
-
-  .word-card{
-    padding:18px 16px;
-    border-radius:22px;
-  }
-
-  .speak-btn{
-    width:66px;
-    height:66px;
-    font-size:28px;
-  }
-
-  .choice-grid{
-    grid-template-columns:1fr;
-  }
-
-  .btn{
-    min-height:44px;
-    padding:0 14px;
-    border-radius:16px;
-    font-size:14px;
-  }
+  .brand-logo{width:54px;height:54px;}
+  .title-badge{width:38px;height:38px;border-radius:12px;font-size:18px;}
+  .title-sub{letter-spacing:0.8px;}
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr));padding:14px;gap:12px;}
+  .card{min-height:102px;padding:20px 14px;border-radius:22px;font-size:clamp(22px,5vw,28px);}
+  .word-grid{padding:14px;gap:12px;}
+  .word-card{padding:18px 16px;border-radius:22px;}
+  .speak-btn{width:66px;height:66px;font-size:28px;}
+  .choice-grid{grid-template-columns:1fr;}
+  .btn{min-height:44px;padding:0 14px;border-radius:16px;font-size:14px;}
 }
 
 @media (max-width:460px){
-  .grid{
-    grid-template-columns:1fr 1fr;
-  }
-
-  .word{
-    font-size:30px;
-  }
-
-  .meaning{
-    font-size:20px;
-  }
+  .grid{grid-template-columns:1fr 1fr;}
+  .word{font-size:30px;}
+  .meaning{font-size:20px;}
 }
 </style>
 </head>
@@ -588,6 +522,21 @@ const BOOK_FILES = {
   "T-map": "./vocab.csv",
   "V-map": "./vmap.csv",
   "절대수능-map": "./suneung.csv"
+};
+
+const FORCE_POS = {
+  "such as": "preposition",
+  "thanks to": "preposition",
+  "according to": "preposition",
+  "because of": "preposition",
+  "instead of": "preposition",
+  "as for": "preposition",
+  "as to": "preposition",
+  "first": "adverb",
+  "excited": "adjective",
+  "biased": "adjective",
+  "mention": "verb",
+  "setting": "noun"
 };
 
 const wordMetaCache = {};
@@ -692,7 +641,8 @@ function formatPos(pos){
     pronoun: "대명사",
     preposition: "전치사",
     conjunction: "접속사",
-    interjection: "감탄사"
+    interjection: "감탄사",
+    phrase: "구"
   };
   return map[pos] || pos || "품사 없음";
 }
@@ -701,19 +651,15 @@ function guessPosFromKor(korText){
   const text = String(korText || "").trim();
   if(!text) return "";
 
-  if(
-    /하다$|되다$|시키다$|받다$|주다$|가다$|오다$|보다$|말하다$|쓰다$|만들다$|보여주다$|알리다$|언급하다$|설명하다$|제안하다$|포함하다$|사용하다$|유발하다$|제공하다$|개선하다$|변화하다$|줄이다$|늘리다$|선택하다$|정리하다$|추가하다$|삭제하다$/.test(text)
-  ){
+  if(/하다$|되다$|시키다$|받다$|주다$|가다$|오다$|보다$|말하다$|쓰다$|만들다$|보여주다$|알리다$|언급하다$|설명하다$|제안하다$|포함하다$|사용하다$|유발하다$|제공하다$|개선하다$|변화하다$|줄이다$|늘리다$|선택하다$|정리하다$|추가하다$|삭제하다$/.test(text)){
     return "verb";
   }
 
-  if(
-    /한$|적인$|스러운$|로운$|같은$|있는$|없는$|중요한$|가능한$|어려운$|쉬운$|편향된$|치우친$|특정한$|적절한$|필요한$|유명한$|간단한$/.test(text)
-  ){
+  if(/한$|적인$|스러운$|로운$|같은$|있는$|없는$|중요한$|가능한$|어려운$|쉬운$|편향된$|치우친$|특정한$|적절한$|필요한$|유명한$|간단한$|신이 난$|신이난$|흥분한$|기쁜$/.test(text)){
     return "adjective";
   }
 
-  if(/하게$|히$|껏$/.test(text)){
+  if(/게$|히$|껏$|먼저$|이미$|아직$|다시$|곧$|빨리$/.test(text)){
     return "adverb";
   }
 
@@ -731,11 +677,22 @@ function pickByPriority(list, priorities){
 async function getWordMeta(word, meaningKor = ""){
   const key = String(word || "").trim().toLowerCase();
   const kor = String(meaningKor || "").trim();
-
-  if(!key) return { pos:"품사 없음", example:"예문 없음" };
-
   const cacheKey = `${key}__${kor}`;
+
+  if(!key){
+    return { pos:"품사 없음", example:"예문 없음" };
+  }
+
   if(wordMetaCache[cacheKey]) return wordMetaCache[cacheKey];
+
+  if(FORCE_POS[key]){
+    const forced = {
+      pos: FORCE_POS[key],
+      example: "예문 없음"
+    };
+    wordMetaCache[cacheKey] = forced;
+    return forced;
+  }
 
   try{
     const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(key)}`);
@@ -773,13 +730,11 @@ async function getWordMeta(word, meaningKor = ""){
 
     let picked = null;
 
-    // 1. 한글 뜻 기준
     const guessedPos = guessPosFromKor(kor);
     if(guessedPos){
       picked = pickByPriority(candidates, [guessedPos, "noun", "verb", "adjective", "adverb"]);
     }
 
-    // 2. 영어 형태 기준
     if(!picked){
       if(key.endsWith("ed")){
         picked = pickByPriority(candidates, ["adjective", "verb", "noun"]);
@@ -790,17 +745,20 @@ async function getWordMeta(word, meaningKor = ""){
       }
     }
 
-    // 3. 한글 뜻 세부 보정
     if(/환경|상황|장소|배경|조건|설정|무대/.test(kor)){
       picked = pickByPriority(candidates, ["noun", "adjective", "verb"]);
     }
 
-    if(/편향된|치우친|기울어진|스러운|로운/.test(kor)){
+    if(/편향된|치우친|기울어진|스러운|로운|신이 난|신이난|흥분한/.test(kor)){
       picked = pickByPriority(candidates, ["adjective", "verb", "noun"]);
     }
 
     if(/언급하다|말하다|설명하다|제안하다|포함하다|사용하다|개선하다|제공하다|표현하다|보여주다/.test(kor)){
       picked = pickByPriority(candidates, ["verb", "noun", "adjective"]);
+    }
+
+    if(/먼저|이미|아직|다시|곧|빨리/.test(kor)){
+      picked = pickByPriority(candidates, ["adverb", "adjective", "noun", "verb"]);
     }
 
     const result = {
@@ -812,8 +770,8 @@ async function getWordMeta(word, meaningKor = ""){
     return result;
   }catch(e){
     const result = {
-      pos:"품사 없음",
-      example:"예문 없음"
+      pos: guessPosFromKor(kor) || "품사 없음",
+      example: "예문 없음"
     };
     wordMetaCache[cacheKey] = result;
     return result;
@@ -861,18 +819,10 @@ function speakWord(word){
 function renderControls(){
   let html = "";
 
-  if(state.book){
-    html += `<button class="btn" data-action="home">처음으로</button>`;
-  }
-  if(state.book && !state.level){
-    html += `<button class="btn" data-action="back-books">← 교재</button>`;
-  }
-  if(state.level && !state.section){
-    html += `<button class="btn" data-action="back-levels">← 레벨</button>`;
-  }
-  if(state.section && !state.chapter){
-    html += `<button class="btn" data-action="back-sections">← 구간</button>`;
-  }
+  if(state.book) html += `<button class="btn" data-action="home">처음으로</button>`;
+  if(state.book && !state.level) html += `<button class="btn" data-action="back-books">← 교재</button>`;
+  if(state.level && !state.section) html += `<button class="btn" data-action="back-levels">← 레벨</button>`;
+  if(state.section && !state.chapter) html += `<button class="btn" data-action="back-sections">← 구간</button>`;
 
   if(state.chapter && state.mode === "browse"){
     html += `<button class="btn" data-action="back-chapters">← Chapter</button>`;
@@ -1247,9 +1197,7 @@ async function loadDataToState(type, value){
     resetLowerState();
 
     const ok = await loadBookData(value);
-    if(ok){
-      render();
-    }
+    if(ok) render();
     return;
   }
 
@@ -1289,15 +1237,8 @@ controls.addEventListener("click", function(e){
 
   const action = btn.dataset.action;
 
-  if(action === "home"){
-    goHome();
-    return;
-  }
-
-  if(action === "back-books"){
-    goHome();
-    return;
-  }
+  if(action === "home"){ goHome(); return; }
+  if(action === "back-books"){ goHome(); return; }
 
   if(action === "back-levels"){
     state.level = null;
@@ -1343,20 +1284,9 @@ controls.addEventListener("click", function(e){
     return;
   }
 
-  if(action === "start-test"){
-    startTest();
-    return;
-  }
-
-  if(action === "exit-test"){
-    state.mode = "browse";
-    render();
-    return;
-  }
-
-  if(action === "restart-test"){
-    startTest();
-  }
+  if(action === "start-test"){ startTest(); return; }
+  if(action === "exit-test"){ state.mode = "browse"; render(); return; }
+  if(action === "restart-test"){ startTest(); }
 });
 
 app.addEventListener("click", async function(e){
@@ -1366,15 +1296,8 @@ app.addEventListener("click", async function(e){
   const type = target.dataset.type;
   const value = target.dataset.value;
 
-  if(type === "speak"){
-    speakWord(value);
-    return;
-  }
-
-  if(type === "choice"){
-    handleChoice(value);
-    return;
-  }
+  if(type === "speak"){ speakWord(value); return; }
+  if(type === "choice"){ handleChoice(value); return; }
 
   await loadDataToState(type, value);
 });
