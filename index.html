@@ -586,7 +586,113 @@ const FORCE_POS = {
   "language": "noun",
   "tradition": "noun",
   "copyright": "noun",
-  "shape": "noun"
+  "shape": "noun",
+
+  "agree": "verb",
+  "argue": "verb",
+  "audience": "noun",
+  "logic": "noun",
+  "topic": "noun",
+  "speech": "noun",
+  "tradition": "noun",
+  "copyright": "noun",
+  "shape": "noun",
+  "congratulate": "verb",
+  "performance": "noun",
+  "melody": "noun",
+  "language": "noun",
+
+  "for free": "adverb phrase",
+  "come from": "verb phrase",
+  "look for": "verb phrase",
+  "be out of": "verb phrase",
+  "answer the phone": "verb phrase",
+  "help someone out": "verb phrase",
+  "could you ~?": "expression",
+  "glad to see you!": "expression"
+};
+
+const BASE_POS_MAP = {
+  agree: "verb",
+  argue: "verb",
+  audience: "noun",
+  cheap: "adjective",
+  windy: "adjective",
+  amazing: "adjective",
+  tiny: "adjective",
+  traffic: "noun",
+  topic: "noun",
+  speech: "noun",
+  remove: "verb",
+  follow: "verb",
+  hot: "adjective",
+  short: "adjective",
+  seed: "noun",
+  logic: "noun",
+  tradition: "noun",
+  copyright: "noun",
+  shape: "noun",
+  familiar: "adjective",
+  congratulate: "verb",
+  language: "noun",
+  melody: "noun",
+  performance: "noun",
+  hospital: "noun",
+  favorite: "adjective",
+  choose: "verb",
+  chose: "verb",
+  chosen: "verb",
+  mention: "verb",
+  excited: "adjective",
+  biased: "adjective",
+  close: "adjective",
+  first: "adverb",
+  setting: "noun",
+  ordinary: "adjective",
+  sad: "adjective",
+  traditional: "adjective",
+  goal: "noun",
+  known: "adjective",
+  swedish: "adjective",
+  whether: "conjunction",
+  during: "preposition",
+  within: "preposition",
+  above: "preposition",
+  overnight: "adverb",
+  public: "adjective",
+  place: "noun",
+  principal: "noun"
+};
+
+const PHRASE_TYPE_MAP = {
+  "for free": "adverb phrase",
+  "come from": "verb phrase",
+  "look for": "verb phrase",
+  "be out of": "verb phrase",
+  "answer the phone": "verb phrase",
+  "help someone out": "verb phrase",
+  "such as": "prepositional phrase",
+  "thanks to": "prepositional phrase",
+  "according to": "prepositional phrase",
+  "because of": "prepositional phrase",
+  "instead of": "prepositional phrase",
+  "as for": "prepositional phrase",
+  "as to": "prepositional phrase",
+  "at the same time": "adverb phrase",
+  "could you ~?": "expression",
+  "glad to see you!": "expression",
+  "public place": "noun phrase",
+  "court battle": "noun phrase",
+  "heavy traffic": "noun phrase",
+  "electricity bill": "noun phrase",
+  "air conditioner": "noun phrase",
+  "credit card": "noun phrase",
+  "post office": "noun phrase",
+  "police station": "noun phrase",
+  "school bus": "noun phrase",
+  "so far": "adverb phrase",
+  "print out": "verb phrase",
+  "here's": "expression"
 };
 
 const wordMetaCache = {};
@@ -692,31 +798,61 @@ function formatPos(pos){
     preposition: "전치사",
     conjunction: "접속사",
     interjection: "감탄사",
-    phrase: "구"
+    article: "관사",
+    phrase: "구",
+    "noun phrase": "명사구",
+    "verb phrase": "동사구",
+    "adverb phrase": "부사구",
+    "adjective phrase": "형용사구",
+    "prepositional phrase": "전치사구",
+    expression: "표현",
+    unknown: "검수필요"
   };
   return map[pos] || pos || "품사 없음";
 }
 
-function detectPos(word, meaningKor = ""){
-  const key = String(word || "").trim().toLowerCase();
+function normalizeText(text){
+  return String(text || "")
+    .replace(/\uFEFF/g, "")
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, " ");
+}
+
+function detectPhraseType(text){
+  const key = normalizeText(text);
+  if(!key) return "";
+
+  if(PHRASE_TYPE_MAP[key]) return PHRASE_TYPE_MAP[key];
+  if(/^could you\b/.test(key)) return "expression";
+  if(/^be out of\b/.test(key)) return "verb phrase";
+  if(/^(thanks to|according to|because of|instead of|as for|as to)\b/.test(key)) return "prepositional phrase";
+  if(key.includes(" ")){
+    if(/^(look|come|go|get|take|put|turn|run|help|answer|print)\b/.test(key)) return "verb phrase";
+    if(/^(for|in|on|at|by|with|from|to|within|during|above|such as)\b/.test(key)) return "prepositional phrase";
+    return "phrase";
+  }
+
+  return "";
+}
+
+function detectPosByMeaning(word, meaningKor = ""){
+  const key = normalizeText(word);
   const kor = String(meaningKor || "").trim();
-
-  if(!key && !kor) return "";
-
-  if(FORCE_POS[key]) return FORCE_POS[key];
+  if(!key || !kor) return "";
 
   const meaningBasedPosMap = {
     clear: {
-  adjective: /분명한|맑은|깨끗한|명확한/,
-  verb: /치우다|없애다|맑게 하다|통과하다/,
-  adverb: /완전히|멀리|떨어져/
-},
+      adjective: /분명한|맑은|깨끗한|명확한/,
+      verb: /치우다|없애다|맑게 하다|통과하다/,
+      adverb: /완전히|멀리|떨어져/
+    },
     fall: {
       verb: /떨어지다|쓰러지다|넘어지다|감소하다|내리다/,
       noun: /가을|낙하|폭포|하락/
     },
     count: {
-      verb: /세다|계산하다/,
+      verb: /세다|계산하다|간주하다/,
       noun: /수|총수|계산/
     },
     win: {
@@ -810,9 +946,6 @@ function detectPos(word, meaningKor = ""){
     hiking: {
       noun: /하이킹|등산/
     },
-    "public place": {
-      noun: /공공장소|공공 장소/
-    },
     remove: {
       verb: /제거하다|치우다|벗기다/
     },
@@ -824,7 +957,6 @@ function detectPos(word, meaningKor = ""){
       adjective: /조용한|가만한/,
       noun: /증류기/
     },
-
     within: {
       preposition: /~안에|~이내에|~범위 안에/
     },
@@ -856,6 +988,35 @@ function detectPos(word, meaningKor = ""){
     swedish: {
       adjective: /스웨덴\(사람\)의/,
       noun: /스웨덴어|스웨덴 사람/
+    },
+    free: {
+      adjective: /무료의|자유로운|한가한/,
+      adverb: /무료로/
+    },
+    court: {
+      noun: /법정|코트|궁정/,
+      verb: /구애하다/
+    },
+    battle: {
+      noun: /전투|싸움/,
+      verb: /싸우다/
+    },
+    light: {
+      noun: /빛|조명|불/,
+      adjective: /가벼운|옅은|연한/,
+      verb: /불을 붙이다|밝히다/
+    },
+    watch: {
+      verb: /지켜보다|보다|관찰하다/,
+      noun: /시계/
+    },
+    question: {
+      noun: /질문|문제|의문/,
+      verb: /질문하다|의심하다/
+    },
+    practice: {
+      noun: /연습|실천|관행/,
+      verb: /연습하다|실행하다/
     }
   };
 
@@ -871,11 +1032,11 @@ function detectPos(word, meaningKor = ""){
 
   const nounVerbMeaningMap = {
     drop: {
-      verb: /떨어뜨리다|떨어지다|그만두다|중단하다|내리다|خفض|버리다/,
+      verb: /떨어뜨리다|떨어지다|그만두다|중단하다|내리다|버리다/,
       noun: /방울|낙하|하락|감소/
     },
     change: {
-      verb: /바꾸다|변경하다|교환하다/,
+      verb: /바꾸다|변경하다|교환하다|변하다/,
       noun: /변화|거스름돈|잔돈/
     },
     increase: {
@@ -963,8 +1124,8 @@ function detectPos(word, meaningKor = ""){
       noun: /희망/
     },
     answer: {
-      verb: /대답하다|응답하다/,
-      noun: /대답|정답/
+      verb: /대답하다|응답하다|받다/,
+      noun: /대답|정답|해답/
     },
     plan: {
       verb: /계획하다/,
@@ -994,7 +1155,6 @@ function detectPos(word, meaningKor = ""){
       verb: /부르다|전화하다/,
       noun: /전화|부름|요구/
     },
-
     title: {
       verb: /제목을 붙이다/,
       noun: /제목|칭호|직함/
@@ -1039,40 +1199,6 @@ function detectPos(word, meaningKor = ""){
     if(/하나를 고르다|골라내다|지목하다/.test(kor)) return "verb";
   }
 
-  if(
-    key === "air conditioner" ||
-    key === "credit card" ||
-    key === "post office" ||
-    key === "police station" ||
-    key === "school bus"
-  ){
-    return "noun";
-  }
-
-  if(key === "court battle"){
-    if(/법정 분쟁|법정 싸움/.test(kor)) return "noun";
-  }
-
-  if(key === "heavy traffic"){
-    if(/교통 체증|교통 혼잡/.test(kor)) return "noun";
-  }
-
-  if(key === "electricity bill"){
-    if(/전기요금/.test(kor)) return "noun";
-  }
-
-  if(key === "so far"){
-    if(/지금까지|지금까지는/.test(kor)) return "adverb";
-  }
-
-  if(key === "print out"){
-    if(/출력하다|인쇄하다|프린트하다/.test(kor)) return "verb";
-  }
-
-  if(key === "here's"){
-    return "phrase";
-  }
-
   if(key === "taint"){
     if(/더럽히다|오염시키다/.test(kor)) return "verb";
     if(/오점|오명/.test(kor)) return "noun";
@@ -1083,43 +1209,54 @@ function detectPos(word, meaningKor = ""){
     if(/물질적인|중대한/.test(kor)) return "adjective";
   }
 
-  if(key.includes(" ")){
-    if(/such as|thanks to|according to|because of|instead of|as for|as to/.test(key)){
-      return "preposition";
-    }
-    if(key === "at the same time"){
-      return "adverb";
-    }
-    return "phrase";
-  }
+  return "";
+}
 
-  if(/고르다|언급하다|말하다|설명하다|제안하다|포함하다|사용하다|개선하다|제공하다|표현하다|보여주다|비추다|축하하다|주장하다|선택하다/.test(kor)){
+function detectPosByBaseMap(word){
+  const key = normalizeText(word);
+  if(!key) return "";
+  if(FORCE_POS[key]) return FORCE_POS[key];
+  return BASE_POS_MAP[key] || "";
+}
+
+function detectPosByKorHeuristic(kor = ""){
+  const text = String(kor || "").trim();
+  if(!text) return "";
+
+  if(/고르다|언급하다|말하다|설명하다|제안하다|포함하다|사용하다|개선하다|제공하다|표현하다|보여주다|비추다|축하하다|주장하다|선택하다/.test(text)){
     return "verb";
   }
 
-  if(/가까운|친한|익숙한|신이 난|신이난|흥분한|편향된|치우친|기울어진|중요한|가능한|유명한|첫 번째/.test(kor)){
+  if(/가까운|친한|익숙한|신이 난|신이난|흥분한|편향된|치우친|기울어진|중요한|가능한|유명한|첫 번째/.test(text)){
     return "adjective";
   }
 
-  if(/환경|상황|장소|배경|조건|설정|무대|전통|언어|저작권|모양|형태|공연|선율|법정 분쟁/.test(kor)){
+  if(/환경|상황|장소|배경|조건|설정|무대|전통|언어|저작권|모양|형태|공연|선율|법정 분쟁/.test(text)){
     return "noun";
   }
 
-  if(/먼저|이미|아직|다시|곧|빨리|동시에/.test(kor)){
+  if(/먼저|이미|아직|다시|곧|빨리|동시에/.test(text)){
     return "adverb";
   }
 
-  if(/하다$|되다$|시키다$|받다$|주다$|가다$|오다$|보다$|쓰다$|만들다$|보여주다$|알리다$/.test(kor)){
+  if(/하다$|되다$|시키다$|받다$|주다$|가다$|오다$|보다$|쓰다$|만들다$|보여주다$|알리다$/.test(text)){
     return "verb";
   }
 
-  if(/한$|적인$|스러운$|로운$|같은$|있는$|없는$|중요한$|가능한$|어려운$|쉬운$|편향된$|치우친$|특정한$|적절한$|필요한$|유명한$|간단한$|신이 난$|신이난$|흥분한$|기쁜$/.test(kor)){
+  if(/한$|적인$|스러운$|로운$|같은$|있는$|없는$|중요한$|가능한$|어려운$|쉬운$|편향된$|치우친$|특정한$|적절한$|필요한$|유명한$|간단한$|신이 난$|신이난$|흥분한$|기쁜$/.test(text)){
     return "adjective";
   }
 
-  if(/게$|히$|껏$|먼저$|이미$|아직$|다시$|곧$|빨리$|동시에$/.test(kor)){
+  if(/게$|히$|껏$|먼저$|이미$|아직$|다시$|곧$|빨리$|동시에$/.test(text)){
     return "adverb";
   }
+
+  return "";
+}
+
+function detectPosBySuffix(word){
+  const key = normalizeText(word);
+  if(!key) return "";
 
   if(/(tion|sion|ment|ness|ity|ship|ism|age|ance|ence)$/.test(key)) return "noun";
   if(/(ous|ful|able|ible|al|ive|less|ic)$/.test(key)) return "adjective";
@@ -1149,6 +1286,52 @@ function guessPosFromKor(korText){
   return "noun";
 }
 
+function analyzePos(word, meaningKor = ""){
+  const phraseType = detectPhraseType(word);
+  if(phraseType){
+    return {
+      pos: phraseType,
+      needsReview: false,
+      source: "phrase-rule"
+    };
+  }
+
+  const byForceOrBase = detectPosByBaseMap(word);
+  const byMeaning = detectPosByMeaning(word, meaningKor);
+  const byKor = detectPosByKorHeuristic(meaningKor);
+  const bySuffix = detectPosBySuffix(word);
+  const byGuess = guessPosFromKor(meaningKor);
+
+  const candidates = [byMeaning, byForceOrBase, byKor, bySuffix].filter(Boolean);
+  const unique = [...new Set(candidates)];
+
+  if(unique.length === 1){
+    return {
+      pos: unique[0],
+      needsReview: false,
+      source: "auto"
+    };
+  }
+
+  if(unique.length >= 2){
+    return {
+      pos: unique[0],
+      needsReview: true,
+      source: "conflict"
+    };
+  }
+
+  return {
+    pos: byGuess || "unknown",
+    needsReview: true,
+    source: "fallback"
+  };
+}
+
+function detectPos(word, meaningKor = ""){
+  return analyzePos(word, meaningKor).pos;
+}
+
 function pickByPriority(list, priorities){
   for(const p of priorities){
     const found = list.find(x => x.pos === p);
@@ -1158,111 +1341,26 @@ function pickByPriority(list, priorities){
 }
 
 async function getWordMeta(word, meaningKor = ""){
-  const key = String(word || "").trim().toLowerCase();
+  const key = normalizeText(word);
   const kor = String(meaningKor || "").trim();
   const cacheKey = `${key}__${kor}`;
 
   if(!key){
-    return { pos:"품사 없음", example:"예문 없음" };
+    return { pos:"unknown", example:"예문 없음", needsReview:true };
   }
 
   if(wordMetaCache[cacheKey]) return wordMetaCache[cacheKey];
 
-  if(FORCE_POS[key]){
-    const forced = {
-      pos: FORCE_POS[key],
-      example: "예문 없음"
-    };
-    wordMetaCache[cacheKey] = forced;
-    return forced;
-  }
+  const analyzed = analyzePos(word, kor);
 
-  try{
-    const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(key)}`);
-    if(!res.ok) throw new Error("not found");
+  const result = {
+    pos: analyzed.pos || "unknown",
+    example: "예문 없음",
+    needsReview: analyzed.needsReview
+  };
 
-    const data = await res.json();
-    const candidates = [];
-
-    if(Array.isArray(data)){
-      for(const entry of data){
-        if(!Array.isArray(entry.meanings)) continue;
-
-        for(const meaning of entry.meanings){
-          const part = meaning.partOfSpeech || "";
-          let example = "";
-
-          if(Array.isArray(meaning.definitions)){
-            const found = meaning.definitions.find(d => d && d.example);
-            if(found?.example) example = found.example;
-          }
-
-          candidates.push({
-            pos: part,
-            example: example || "예문 없음"
-          });
-        }
-      }
-    }
-
-    if(!candidates.length){
-      const result = {
-        pos: detectPos(word, kor) || "품사 없음",
-        example: "예문 없음"
-      };
-      wordMetaCache[cacheKey] = result;
-      return result;
-    }
-
-    let picked = null;
-
-    const guessedPos = detectPos(word, kor) || guessPosFromKor(kor);
-
-    if(guessedPos){
-      picked = pickByPriority(candidates, [guessedPos, "verb", "adjective", "adverb", "noun", "preposition", "conjunction"]);
-    }
-
-    if(!picked){
-      if(key.endsWith("ed")){
-        picked = pickByPriority(candidates, ["adjective", "verb", "noun"]);
-      }else if(key.endsWith("ing")){
-        picked = pickByPriority(candidates, ["noun", "adjective", "verb"]);
-      }else{
-        picked = candidates[0];
-      }
-    }
-
-    if(/환경|상황|장소|배경|조건|설정|무대|전통|언어|저작권|모양|형태|공연|선율|법정 분쟁/.test(kor)){
-      picked = pickByPriority(candidates, ["noun", "adjective", "verb", "adverb"]);
-    }
-
-    if(/편향된|치우친|기울어진|스러운|로운|신이 난|신이난|흥분한|가까운|친한|익숙한/.test(kor)){
-      picked = pickByPriority(candidates, ["adjective", "verb", "noun", "adverb"]);
-    }
-
-    if(/언급하다|말하다|설명하다|제안하다|포함하다|사용하다|개선하다|제공하다|표현하다|보여주다|고르다|비추다|축하하다|주장하다|선택하다/.test(kor)){
-      picked = pickByPriority(candidates, ["verb", "noun", "adjective", "adverb"]);
-    }
-
-    if(/먼저|이미|아직|다시|곧|빨리|동시에/.test(kor)){
-      picked = pickByPriority(candidates, ["adverb", "adjective", "noun", "verb"]);
-    }
-
-    const result = {
-      pos: picked?.pos || detectPos(word, kor) || "품사 없음",
-      example: picked?.example || "예문 없음"
-    };
-
-    wordMetaCache[cacheKey] = result;
-    return result;
-  }catch(e){
-    const result = {
-      pos: detectPos(word, kor) || guessPosFromKor(kor) || "품사 없음",
-      example: "예문 없음"
-    };
-    wordMetaCache[cacheKey] = result;
-    return result;
-  }
+  wordMetaCache[cacheKey] = result;
+  return result;
 }
 
 function speakWord(word){
@@ -1440,7 +1538,7 @@ function renderWords(){
             <div class="word ${state.hideWord ? "hidden-word" : ""}">${i + 1}. ${escapeHtml(row["영어"])}</div>
             <div class="meaning ${state.hideMeaning ? "hidden-meaning" : ""}">${escapeHtml(row["뜻"])}</div>
             <div class="meta-wrap">
-              <div class="meta-loading" id="meta-${i}">품사와 예문 불러오는 중...</div>
+              <div class="meta-loading" id="meta-${i}">품사 불러오는 중...</div>
             </div>
           </div>
           <button class="speak-btn" data-type="speak" data-value="${escapeHtml(row["영어"])}">🔊</button>
