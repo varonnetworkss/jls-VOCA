@@ -689,6 +689,11 @@ function detectPos(word, meaningKor = ""){
   if(FORCE_POS[key]) return FORCE_POS[key];
 
   const meaningBasedPosMap = {
+    clear: {
+  adjective: /분명한|맑은|깨끗한|명확한/,
+  verb: /치우다|없애다|맑게 하다|통과하다/,
+  adverb: /완전히|멀리|떨어져/
+},
     fall: {
       verb: /떨어지다|쓰러지다|넘어지다|감소하다|내리다/,
       noun: /가을|낙하|폭포|하락/
