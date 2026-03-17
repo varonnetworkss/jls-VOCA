@@ -1175,6 +1175,65 @@ controls.addEventListener("click", function(e){
 });
 
 app.addEventListener("click", async function(e){
+  const actionBtn = e.target.closest("[data-action]");
+  if(actionBtn){
+    const action = actionBtn.dataset.action;
+
+    if(action === "home"){ goHome(); return; }
+    if(action === "back-books"){ goHome(); return; }
+
+    if(action === "back-levels"){
+      state.level = null;
+      state.section = null;
+      state.chapter = null;
+      state.hideWord = false;
+      state.hideMeaning = false;
+      state.mode = "browse";
+      render();
+      return;
+    }
+
+    if(action === "back-sections"){
+      state.section = null;
+      state.chapter = null;
+      state.hideWord = false;
+      state.hideMeaning = false;
+      state.mode = "browse";
+      render();
+      return;
+    }
+
+    if(action === "back-chapters"){
+      state.chapter = null;
+      state.hideWord = false;
+      state.hideMeaning = false;
+      state.mode = "browse";
+      render();
+      return;
+    }
+
+    if(action === "toggle-meaning"){
+      state.hideMeaning = !state.hideMeaning;
+      renderControls();
+      renderWords();
+      return;
+    }
+
+    if(action === "toggle-word"){
+      state.hideWord = !state.hideWord;
+      renderControls();
+      renderWords();
+      return;
+    }
+
+    if(action === "start-test"){ startTest(); return; }
+    if(action === "exit-test"){ state.mode = "browse"; render(); return; }
+    if(action === "restart-test"){ startTest(); return; }
+    if(action === "restart-wrong"){ startTest(testState.wrongRows); return; }
+    if(action === "show-wrong-list"){ state.mode = "wrong-list"; render(); return; }
+    if(action === "back-result"){ state.mode = "result"; render(); return; }
+  }
+
   const target = e.target.closest("[data-type]");
   if(!target) return;
 
