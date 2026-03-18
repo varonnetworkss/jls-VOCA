@@ -431,6 +431,68 @@ body{
   color:#b33974;
 }
 
+.test-input-wrap{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+
+.test-input{
+  flex:1 1 220px;
+  min-height:58px;
+  border:1px solid #d7e2ff;
+  background:#fff;
+  border-radius:18px;
+  padding:0 18px;
+  font-size:20px;
+  color:#23438d;
+  outline:none;
+  box-shadow:0 6px 16px rgba(36,71,166,0.06);
+  font-family:'Poppins','GeekbleMalang',sans-serif;
+}
+.test-input:focus{
+  border-color:#7aa8ff;
+  box-shadow:0 0 0 4px rgba(47,128,237,0.12);
+}
+
+.test-submit-btn{
+  min-width:120px;
+  min-height:58px;
+  border:none;
+  border-radius:18px;
+  background:linear-gradient(135deg,#2447a6 0%, #2f80ed 100%);
+  color:#fff;
+  font-size:18px;
+  cursor:pointer;
+  box-shadow:0 10px 20px rgba(36,71,166,0.16);
+  font-family:'GeekbleMalang','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+}
+.test-submit-btn:hover{
+  transform:translateY(-1px);
+}
+
+.answer-feedback{
+  margin-top:14px;
+  padding:16px 18px;
+  border-radius:18px;
+  font-size:17px;
+  line-height:1.5;
+  word-break:keep-all;
+}
+
+.answer-feedback.correct{
+  background:linear-gradient(180deg,#fff5e8 0%, #ffe9cb 100%);
+  color:#9a5600;
+  border:1px solid #ffc57c;
+}
+
+.answer-feedback.wrong{
+  background:linear-gradient(180deg,#fff3f8 0%, #ffe2ee 100%);
+  color:#b33974;
+  border:1px solid #ffbfd8;
+}
+
 .test-result{
   background:linear-gradient(180deg,#ffffff 0%, #f8fbff 100%);
   border:1px solid #dde7ff;
@@ -479,6 +541,8 @@ body{
   .speak-btn{width:66px;height:66px;font-size:28px;}
   .choice-grid{grid-template-columns:1fr;}
   .btn{min-height:44px;padding:0 14px;border-radius:16px;font-size:14px;}
+  .test-input-wrap{flex-direction:column;}
+  .test-input,.test-submit-btn{width:100%;}
 }
 
 @media (max-width:460px){
@@ -536,7 +600,10 @@ let testState = {
   score: 0,
   selected: null,
   answered: false,
-  wrongRows: []
+  wrongRows: [],
+  testType: "eng-to-kor-choices",
+  inputValue: "",
+  inputCorrect: false
 };
 
 const app = document.getElementById("app");
@@ -610,6 +677,26 @@ function shuffle(arr){
   return copy;
 }
 
+function normalizeAnswer(str){
+  return String(str || "")
+    .toLowerCase()
+    .replace(/\s+/g, "")
+    .trim();
+}
+
+function checkSpelling(userInput, correctAnswer){
+  const user = normalizeAnswer(userInput);
+  const correct = normalizeAnswer(correctAnswer);
+  return user === correct;
+}
+
+function getTestTypeLabel(type){
+  if(type === "eng-to-kor-choices") return "영어 → 뜻";
+  if(type === "kor-to-eng-choices") return "뜻 → 영어";
+  if(type === "kor-to-eng-input") return "뜻 → 스펠링";
+  return "테스트";
+}
+
 function speakWord(word){
   if (!("speechSynthesis" in window)) {
     alert("이 기기에서는 음성 재생을 지원하지 않습니다.");
@@ -660,7 +747,9 @@ function renderControls(){
     html += `<button class="btn" data-action="back-chapters">← Chapter</button>`;
     html += `<button class="btn" data-action="toggle-meaning">${state.hideMeaning ? "뜻 보이기" : "뜻 숨기기"}</button>`;
     html += `<button class="btn" data-action="toggle-word">${state.hideWord ? "영어 보이기" : "영어 숨기기"}</button>`;
-    html += `<button class="btn" data-action="start-test">테스트 시작</button>`;
+    html += `<button class="btn" data-action="start-test-eng-kor">영어 → 뜻 테스트</button>`;
+    html += `<button class="btn" data-action="start-test-kor-eng">뜻 → 영어 테스트</button>`;
+    html += `<button class="btn" data-action="start-test-spelling">뜻 → 스펠링 테스트</button>`;
   }
 
   if(state.chapter && state.mode === "test"){
@@ -689,6 +778,9 @@ function renderPath(){
   if(state.level) parts.push(state.level);
   if(state.section) parts.push(state.section);
   if(state.chapter) parts.push(`Chapter ${state.chapter}`);
+  if(state.mode === "test" || state.mode === "result" || state.mode === "wrong-list"){
+    parts.push(getTestTypeLabel(testState.testType));
+  }
   if(state.mode === "test") parts.push("테스트");
   if(state.mode === "result") parts.push("결과");
   if(state.mode === "wrong-list") parts.push("오답 리스트");
@@ -801,41 +893,87 @@ function renderWords(){
   `;
 }
 
-function buildTestQuestions(rows, poolRows = rows){
+function buildTestQuestions(rows, poolRows = rows, testType = "eng-to-kor-choices"){
   const usable = rows.filter(r => r["영어"] && r["뜻"]);
   const choicePoolRows = poolRows.filter(r => r["영어"] && r["뜻"]);
   const shuffled = shuffle(usable);
 
   return shuffled.map(row => {
-    const correct = row["뜻"];
-    let wrongPool = shuffle(
-      choicePoolRows.map(x => x["뜻"]).filter(v => v && v !== correct)
-    ).slice(0, 3);
+    if(testType === "eng-to-kor-choices"){
+      const correct = row["뜻"];
+      let wrongPool = shuffle(
+        choicePoolRows.map(x => x["뜻"]).filter(v => v && v !== correct)
+      ).slice(0, 3);
 
-    while(wrongPool.length < 3 && choicePoolRows.length > 1){
-      const extra = shuffle(
-        choicePoolRows.map(x => x["뜻"]).filter(v => v && v !== correct && !wrongPool.includes(v))
-      )[0];
-      if(!extra) break;
-      wrongPool.push(extra);
+      while(wrongPool.length < 3 && choicePoolRows.length > 1){
+        const extra = shuffle(
+          choicePoolRows.map(x => x["뜻"]).filter(v => v && v !== correct && !wrongPool.includes(v))
+        )[0];
+        if(!extra) break;
+        wrongPool.push(extra);
+      }
+
+      const choices = shuffle([correct, ...wrongPool]);
+
+      return {
+        promptLabel: "다음 영어의 뜻은?",
+        prompt: row["영어"],
+        answer: row["뜻"],
+        choices,
+        row
+      };
     }
 
-    const choices = shuffle([correct, ...wrongPool]);
+    if(testType === "kor-to-eng-choices"){
+      const correct = row["영어"];
+      let wrongPool = shuffle(
+        choicePoolRows.map(x => x["영어"]).filter(v => v && v !== correct)
+      ).slice(0, 3);
+
+      while(wrongPool.length < 3 && choicePoolRows.length > 1){
+        const extra = shuffle(
+          choicePoolRows.map(x => x["영어"]).filter(v => v && v !== correct && !wrongPool.includes(v))
+        )[0];
+        if(!extra) break;
+        wrongPool.push(extra);
+      }
+
+      const choices = shuffle([correct, ...wrongPool]);
+
+      return {
+        promptLabel: "다음 뜻에 맞는 영어는?",
+        prompt: row["뜻"],
+        answer: row["영어"],
+        choices,
+        row
+      };
+    }
+
+    if(testType === "kor-to-eng-input"){
+      return {
+        promptLabel: "다음 뜻의 영어 스펠링을 입력해라",
+        prompt: row["뜻"],
+        answer: row["영어"],
+        choices: [],
+        row
+      };
+    }
 
     return {
-      word: row["영어"],
-      correct,
-      choices,
+      promptLabel: "문제",
+      prompt: row["영어"],
+      answer: row["뜻"],
+      choices: [],
       row
     };
   });
 }
 
-function startTest(customRows = null){
+function startTest(testType = "eng-to-kor-choices", customRows = null){
   const chapterRows = getCurrentChapterRows();
   const rows = customRows || chapterRows;
 
-  if(!customRows && chapterRows.length < 4){
+  if(!customRows && (testType === "eng-to-kor-choices" || testType === "kor-to-eng-choices") && chapterRows.length < 4){
     alert("테스트를 하려면 해당 Chapter에 단어가 최소 4개 있어야 한다.");
     return;
   }
@@ -846,16 +984,27 @@ function startTest(customRows = null){
   }
 
   testState = {
-    questions: buildTestQuestions(rows, chapterRows),
+    questions: buildTestQuestions(rows, chapterRows, testType),
     currentIndex: 0,
     score: 0,
     selected: null,
     answered: false,
-    wrongRows: []
+    wrongRows: [],
+    testType,
+    inputValue: "",
+    inputCorrect: false
   };
 
   state.mode = "test";
   render();
+}
+
+function focusSpellingInput(){
+  if(testState.testType !== "kor-to-eng-input") return;
+  setTimeout(() => {
+    const el = document.getElementById("spelling-input");
+    if(el) el.focus();
+  }, 50);
 }
 
 function renderTest(){
@@ -867,6 +1016,52 @@ function renderTest(){
     return;
   }
 
+  if(testState.testType === "kor-to-eng-input"){
+    const feedbackHtml = testState.answered
+      ? testState.inputCorrect
+        ? `<div class="answer-feedback correct">정답</div>`
+        : `<div class="answer-feedback wrong">오답! 정답: <strong>${escapeHtml(q.answer)}</strong></div>`
+      : "";
+
+    app.innerHTML = `
+      <div class="test-wrap">
+        <div class="test-top">
+          <div class="test-progress">${testState.currentIndex + 1} / ${testState.questions.length}</div>
+          <div class="test-progress">점수 ${testState.score}</div>
+        </div>
+
+        <div class="question-box">
+          <div class="question-label">${escapeHtml(q.promptLabel)}</div>
+          <div class="question-word">${escapeHtml(q.prompt)}</div>
+        </div>
+
+        <div class="test-input-wrap">
+          <input
+            id="spelling-input"
+            class="test-input"
+            type="text"
+            autocomplete="off"
+            autocapitalize="off"
+            spellcheck="false"
+            placeholder="영어 단어 입력"
+            value="${escapeHtml(testState.inputValue || "")}"
+            ${testState.answered ? "disabled" : ""}
+          >
+          <button
+            class="test-submit-btn"
+            data-action="submit-spelling"
+            ${testState.answered ? "disabled" : ""}
+          >제출</button>
+        </div>
+
+        ${feedbackHtml}
+      </div>
+    `;
+
+    focusSpellingInput();
+    return;
+  }
+
   app.innerHTML = `
     <div class="test-wrap">
       <div class="test-top">
@@ -875,8 +1070,8 @@ function renderTest(){
       </div>
 
       <div class="question-box">
-        <div class="question-label">다음 영어의 뜻은?</div>
-        <div class="question-word">${escapeHtml(q.word)}</div>
+        <div class="question-label">${escapeHtml(q.promptLabel)}</div>
+        <div class="question-word">${escapeHtml(q.prompt)}</div>
       </div>
 
       <div class="choice-grid">
@@ -884,8 +1079,8 @@ function renderTest(){
           let cls = "choice-btn";
 
           if(testState.answered){
-            if(choice === q.correct) cls += " correct";
-            else if(choice === testState.selected && choice !== q.correct) cls += " wrong";
+            if(choice === q.answer) cls += " correct";
+            else if(choice === testState.selected && choice !== q.answer) cls += " wrong";
           }
 
           return `
@@ -904,6 +1099,24 @@ function renderTest(){
   `;
 }
 
+function goToNextQuestion(){
+  document.activeElement?.blur();
+  testState.selected = null;
+  testState.answered = false;
+  testState.inputValue = "";
+  testState.inputCorrect = false;
+  testState.currentIndex += 1;
+
+  if(testState.currentIndex >= testState.questions.length){
+    state.mode = "result";
+    render();
+  }else{
+    renderTest();
+    renderControls();
+    renderPath();
+  }
+}
+
 function handleChoice(choice){
   if(testState.answered) return;
 
@@ -911,7 +1124,7 @@ function handleChoice(choice){
   testState.selected = choice;
   testState.answered = true;
 
-  if(choice === q.correct){
+  if(choice === q.answer){
     testState.score += 1;
   }else{
     testState.wrongRows.push(q.row);
@@ -920,20 +1133,32 @@ function handleChoice(choice){
   renderTest();
 
   setTimeout(() => {
-    document.activeElement?.blur();
-    testState.selected = null;
-    testState.answered = false;
-    testState.currentIndex += 1;
-
-    if(testState.currentIndex >= testState.questions.length){
-      state.mode = "result";
-      render();
-    }else{
-      renderTest();
-      renderControls();
-      renderPath();
-    }
+    goToNextQuestion();
   }, 800);
+}
+
+function submitSpellingAnswer(){
+  if(testState.answered) return;
+
+  const q = testState.questions[testState.currentIndex];
+  const inputEl = document.getElementById("spelling-input");
+  const userInput = inputEl ? inputEl.value : "";
+
+  testState.inputValue = userInput;
+  testState.answered = true;
+  testState.inputCorrect = checkSpelling(userInput, q.answer);
+
+  if(testState.inputCorrect){
+    testState.score += 1;
+  }else{
+    testState.wrongRows.push(q.row);
+  }
+
+  renderTest();
+
+  setTimeout(() => {
+    goToNextQuestion();
+  }, 900);
 }
 
 function renderWrongList(){
@@ -977,7 +1202,7 @@ function renderResult(){
   app.innerHTML = `
     <div class="test-result">
       <div class="result-score">${score} / ${total}</div>
-      <div class="result-sub">정답률 ${percent}% · 오답 ${wrongCount}개</div>
+      <div class="result-sub">${escapeHtml(getTestTypeLabel(testState.testType))} · 정답률 ${percent}% · 오답 ${wrongCount}개</div>
       <div class="result-buttons">
         <button class="btn" data-action="restart-test">다시 테스트</button>
         <button class="btn" data-action="restart-wrong">오답만 다시 테스트</button>
@@ -1166,10 +1391,13 @@ controls.addEventListener("click", function(e){
     return;
   }
 
-  if(action === "start-test"){ startTest(); return; }
+  if(action === "start-test-eng-kor"){ startTest("eng-to-kor-choices"); return; }
+  if(action === "start-test-kor-eng"){ startTest("kor-to-eng-choices"); return; }
+  if(action === "start-test-spelling"){ startTest("kor-to-eng-input"); return; }
+  if(action === "submit-spelling"){ submitSpellingAnswer(); return; }
   if(action === "exit-test"){ state.mode = "browse"; render(); return; }
-  if(action === "restart-test"){ startTest(); return; }
-  if(action === "restart-wrong"){ startTest(testState.wrongRows); return; }
+  if(action === "restart-test"){ startTest(testState.testType); return; }
+  if(action === "restart-wrong"){ startTest(testState.testType, testState.wrongRows); return; }
   if(action === "show-wrong-list"){ state.mode = "wrong-list"; render(); return; }
   if(action === "back-result"){ state.mode = "result"; render(); return; }
 });
@@ -1226,10 +1454,13 @@ app.addEventListener("click", async function(e){
       return;
     }
 
-    if(action === "start-test"){ startTest(); return; }
+    if(action === "start-test-eng-kor"){ startTest("eng-to-kor-choices"); return; }
+    if(action === "start-test-kor-eng"){ startTest("kor-to-eng-choices"); return; }
+    if(action === "start-test-spelling"){ startTest("kor-to-eng-input"); return; }
+    if(action === "submit-spelling"){ submitSpellingAnswer(); return; }
     if(action === "exit-test"){ state.mode = "browse"; render(); return; }
-    if(action === "restart-test"){ startTest(); return; }
-    if(action === "restart-wrong"){ startTest(testState.wrongRows); return; }
+    if(action === "restart-test"){ startTest(testState.testType); return; }
+    if(action === "restart-wrong"){ startTest(testState.testType, testState.wrongRows); return; }
     if(action === "show-wrong-list"){ state.mode = "wrong-list"; render(); return; }
     if(action === "back-result"){ state.mode = "result"; render(); return; }
   }
@@ -1244,6 +1475,15 @@ app.addEventListener("click", async function(e){
   if(type === "choice"){ handleChoice(value); return; }
 
   await loadDataToState(type, value);
+});
+
+app.addEventListener("keydown", function(e){
+  if(e.key === "Enter" && testState.testType === "kor-to-eng-input" && state.mode === "test"){
+    const inputEl = document.getElementById("spelling-input");
+    if(inputEl && document.activeElement === inputEl){
+      submitSpellingAnswer();
+    }
+  }
 });
 
 function init(){
