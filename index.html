@@ -995,7 +995,7 @@ function buildTestQuestions(rows, poolRows = rows, testType = "eng-to-kor-choice
 
     if(testType === "kor-to-eng-input"){
       return {
-        promptLabel: "다음 뜻의 영어 스펠링을 입력해라",
+        promptLabel: "다음 뜻의 영어 스펠링을 입력하세요. 아자스!",
         prompt: row["뜻"],
         answer: row["영어"],
         choices: [],
